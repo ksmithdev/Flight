@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "FlightSample": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "FLIGHT_ENVIRONMENT": "debug"
+      }
+    }
+  }
+}

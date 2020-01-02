@@ -1,0 +1,2 @@
+﻿ALTER TABLE Projects ADD [Description] NVARCHAR(100) NOT NULL CONSTRAINT DF_Description DEFAULT(N'');
+GO
