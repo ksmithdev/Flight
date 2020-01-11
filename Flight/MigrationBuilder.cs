@@ -36,7 +36,7 @@ namespace Flight
             return this;
         }
 
-        public Migration Build(ILoggerFactory loggerFactory)
+        public IMigration Build(ILoggerFactory loggerFactory)
         {
             if (connectionFactory == null)
                 throw new InvalidOperationException("cannot build migration without setting connection factory");

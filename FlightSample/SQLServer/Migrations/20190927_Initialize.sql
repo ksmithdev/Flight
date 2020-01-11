@@ -1,4 +1,4 @@
-﻿CREATE TABLE Employees (
+﻿CREATE TABLE dbo.Employees (
 	EmployeeNumber NVARCHAR(15) NOT NULL,
 	FirstName NVARCHAR(50) NOT NULL,
 	LastName NVARCHAR(50) NOT NULL,
@@ -6,14 +6,14 @@
 );
 GO
 
-CREATE TABLE ProjectTypes (
+CREATE TABLE dbo.ProjectTypes (
 	ProjectTypeId INT NOT NULL,
 	DisplayName NVARCHAR(15) NOT NULL,
 	CONSTRAINT PK_ProjectTypes PRIMARY KEY (ProjectTypeId)
 );
 GO
 
-CREATE TABLE Projects (
+CREATE TABLE dbo.Projects (
 	ProjectNumber NVARCHAR(15) NOT NULL,
 	ProjectTypeId INT NOT NULL,
 	ProjectManagerNumber NVARCHAR(15) NOT NULL,

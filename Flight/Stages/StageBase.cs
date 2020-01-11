@@ -2,6 +2,7 @@
 using Flight.Database;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,11 +27,21 @@ namespace Flight.Stages
         public async Task MigrateAsync(IConnectionFactory connectionFactory, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken = default)
         {
             if (!initialized)
-                throw new FlightException("stage not initialized");
+                throw new FlightException("Stage not initialized");
 
             await ExecuteAsync(connectionFactory, batchManager, auditLog, cancellationToken);
         }
 
+        public async Task MigrateAsync(DbConnection connection, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken = default)
+        {
+            if (!initialized)
+                throw new FlightException("Stage not initialized");
+
+            await ExecuteAsync(connection, batchManager, auditLog, cancellationToken);
+        }
+
         protected abstract Task ExecuteAsync(IConnectionFactory connectionManager, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken = default);
+
+        protected abstract Task ExecuteAsync(DbConnection connection, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken = default);
     }
 }

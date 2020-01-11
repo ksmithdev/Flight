@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Flight
 {
-    public class Migration
+    public class Migration : IMigration
     {
         private readonly IAuditLog auditLog;
         private readonly IBatchManager batchManager;
@@ -36,11 +36,16 @@ namespace Flight
             {
                 logger.LogDebug($"{stages.Count()} stages loaded");
 
+                using var connection = connectionFactory.Create();
+                await connection.OpenAsync();
+
+                logger.LogDebug($"Successfully established connection to {connection.ConnectionString}");
+
                 foreach (var stage in stages)
                 {
                     logger.LogDebug($"Migrating stage {stage.GetType()}");
 
-                    await stage.MigrateAsync(connectionFactory, batchManager, auditLog, cancellationToken);
+                    await stage.MigrateAsync(connection, batchManager, auditLog, cancellationToken);
                 }
             }
             catch (FlightException)
@@ -49,8 +54,6 @@ namespace Flight
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Migration failed due to an unknown exception");
-
                 throw new FlightException("An unknown error occured while migrating the database", ex);
             }
 

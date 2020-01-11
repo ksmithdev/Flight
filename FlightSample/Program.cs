@@ -17,7 +17,7 @@ namespace FlightSample
 
             var configurationBuilder = new ConfigurationBuilder()
                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-               .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("FLIGHT_ENVIRONMENT") ?? "debug"}.json", optional: true, reloadOnChange: true);
+               .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("FLIGHT_ENVIRONMENT") ?? "Debug"}.json", optional: true, reloadOnChange: true);
 
             Configuration = configurationBuilder.Build();
 
@@ -38,10 +38,10 @@ namespace FlightSample
                 .AddTransactionPerScriptStage(new FileSystemScriptProvider(new[] { @"SqlServer\Views" }) { Idempotent = true })
                 .Build(loggerFactory);
 
-            await migration.MigrateAsync();
+            //await migration.MigrateAsync();
 
             var sqliteMigration = new MigrationBuilder()
-                .UseSqlite(@"Data Source=MigrationTest.sqlite;", auditTable: "changesets")
+                .UseSqlite(@"Data Source=:memory:;", auditTable: "changesets")
 #if DEBUG
                 .InitializeDatabase(new FileSystemScriptProvider(new[] { @"Sqlite\Initialization" }))
                 .AddOneTransactionStage(new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" }) { Recursive = true })

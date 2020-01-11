@@ -43,6 +43,16 @@ namespace Flight.Stages
                 await ApplyAsync(connection, changeSet, batchManager, auditLog, cancellationToken);
         }
 
+        protected override async Task ExecuteAsync(DbConnection connection, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken = default)
+        {
+            var changeSet = await CreateChangeSetAsync(connection, auditLog);
+
+            Logger.LogInformation($"Change set contains {changeSet.Count} script(s)");
+
+            if (changeSet.Any())
+                await ApplyAsync(connection, changeSet, batchManager, auditLog, cancellationToken);
+        }
+
         private async Task<List<IScript>> CreateChangeSetAsync(DbConnection connection, IAuditLog auditLog)
         {
             var scripts = ScriptProvider.GetScripts();
@@ -74,7 +84,7 @@ namespace Flight.Stages
                 }
                 else
                 {
-                    Logger.LogDebug($"Checksum for {script.ScriptName} matches last applied.");
+                    Logger.LogDebug($"Checksum for {script.ScriptName} matches last applied. Skipping.");
                 }
             }
 
