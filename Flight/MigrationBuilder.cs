@@ -62,7 +62,7 @@ namespace Flight
 
         public MigrationBuilder InitializeDatabase(IScriptProvider scriptProvider)
         {
-            configuratioScriptProviders.AddScriptProvider(new SortByScriptNameDecorator(scriptProvider));
+            configuratioScriptProviders.AddScriptProvider(scriptProvider);
 
             return this;
         }

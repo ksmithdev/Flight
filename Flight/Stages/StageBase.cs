@@ -24,14 +24,6 @@ namespace Flight.Stages
             initialized = true;
         }
 
-        public async Task MigrateAsync(IConnectionFactory connectionFactory, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken = default)
-        {
-            if (!initialized)
-                throw new FlightException("Stage not initialized");
-
-            await ExecuteAsync(connectionFactory, batchManager, auditLog, cancellationToken);
-        }
-
         public async Task MigrateAsync(DbConnection connection, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken = default)
         {
             if (!initialized)
@@ -39,8 +31,6 @@ namespace Flight.Stages
 
             await ExecuteAsync(connection, batchManager, auditLog, cancellationToken);
         }
-
-        protected abstract Task ExecuteAsync(IConnectionFactory connectionManager, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken = default);
 
         protected abstract Task ExecuteAsync(DbConnection connection, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken = default);
     }

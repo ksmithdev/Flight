@@ -28,21 +28,6 @@ namespace Flight.Stages
 
         protected abstract Task ApplyAsync(DbConnection connection, IEnumerable<IScript> scripts, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken = default);
 
-        protected override async Task ExecuteAsync(IConnectionFactory connectionFactory, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken = default)
-        {
-            using var connection = connectionFactory.Create();
-            await connection.OpenAsync(cancellationToken);
-
-            Logger.LogDebug($"Established connection to {connection.Database}");
-
-            var changeSet = await CreateChangeSetAsync(connection, auditLog);
-
-            Logger.LogInformation($"Change set contains {changeSet.Count} script(s)");
-
-            if (changeSet.Any())
-                await ApplyAsync(connection, changeSet, batchManager, auditLog, cancellationToken);
-        }
-
         protected override async Task ExecuteAsync(DbConnection connection, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken = default)
         {
             var changeSet = await CreateChangeSetAsync(connection, auditLog);

@@ -32,8 +32,7 @@ namespace Flight.Auditing
 
         public async Task<string?> ReadLastAppliedChecksumAsync(DbConnection connection, IScript script, CancellationToken cancellationToken = default)
         {
-            if (auditLog == null)
-                auditLog = await LoadAuditEntriesAsync(connection, cancellationToken);
+            auditLog ??= await LoadAuditEntriesAsync(connection, cancellationToken);
 
             var entries = auditLog[script.ScriptName];
             var entry = entries?.FirstOrDefault();

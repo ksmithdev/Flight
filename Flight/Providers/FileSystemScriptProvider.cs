@@ -20,27 +20,31 @@ namespace Flight.Providers
 
         public bool Recursive { get; set; } = false;
 
+        public bool Sorted { get; set; } = true;
+
         public override IEnumerable<IScript> GetScripts()
         {
             Logger.LogDebug($"Search settings: recusive={Recursive}, filter={Filter}");
 
             var scripts = new List<FileSystemScript>();
 
-            foreach (var location in locations.Distinct())
+            var paths = locations.Select(l => Path.GetFullPath(l));
+
+            foreach (var path in paths.Distinct())
             {
-                if (!Directory.Exists(location))
+                if (!Directory.Exists(path))
                 {
-                    Logger.LogWarning($"Location does not exist: {location}");
+                    Logger.LogWarning($"Location does not exist: {path}");
                     continue;
                 }
 
-                var filePaths = Directory.GetFiles(location, Filter, Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+                var filePaths = Directory.GetFiles(path, Filter, Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
 
                 foreach (var filePath in filePaths)
                     scripts.Add(new FileSystemScript(filePath, Idempotent));
             }
 
-            return scripts;
+            return Sorted ? scripts.OrderBy(s => s.ScriptName).AsEnumerable() : scripts;
         }
     }
 }

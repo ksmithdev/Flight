@@ -30,11 +30,11 @@ namespace Flight
 
         public async Task MigrateAsync(CancellationToken cancellationToken = default)
         {
-            logger.LogTrace($"Migration started");
+            logger.LogInformation($"Migration started");
 
             try
             {
-                logger.LogDebug($"{stages.Count()} stages loaded");
+                logger.LogInformation($"{stages.Count()} stages loaded");
 
                 using var connection = connectionFactory.Create();
                 await connection.OpenAsync();
@@ -57,7 +57,7 @@ namespace Flight
                 throw new FlightException("An unknown error occured while migrating the database", ex);
             }
 
-            logger.LogTrace($"Migration complete");
+            logger.LogInformation($"Migration complete");
         }
     }
 }

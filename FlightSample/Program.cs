@@ -31,22 +31,38 @@ namespace FlightSample
                 .UseSqlServer(@"(LocalDB)\MSSQLLocalDB", database: "MigrationTest", auditSchema: "Flight", auditTable: "ChangeSets")
 #if DEBUG
                 .InitializeDatabase(new FileSystemScriptProvider(new[] { @"SqlServer\Initialization" }))
-                .AddOneTransactionStage(new FileSystemScriptProvider(new[] { @"SqlServer\Migrations" }) { Recursive = true })
+                .AddOneTransactionStage(
+                    new SortByScriptNameDecorator(
+                        new FileSystemScriptProvider(new[] { @"SqlServer\Migrations" }) { Recursive = true }
+                    )
+                )
 #else
-                .AddOneTransactionStage(new FileSystemScriptProvider(new[] { @"SqlServer\Migrations" }))
+                .AddOneTransactionStage(
+                    new SortByScriptNameDecorator(
+                        new FileSystemScriptProvider(new[] { @"SqlServer\Migrations" })
+                    )
+                )
 #endif
                 .AddTransactionPerScriptStage(new FileSystemScriptProvider(new[] { @"SqlServer\Views" }) { Idempotent = true })
                 .Build(loggerFactory);
 
-            //await migration.MigrateAsync();
+            await migration.MigrateAsync();
 
             var sqliteMigration = new MigrationBuilder()
                 .UseSqlite(@"Data Source=:memory:;", auditTable: "changesets")
 #if DEBUG
                 .InitializeDatabase(new FileSystemScriptProvider(new[] { @"Sqlite\Initialization" }))
-                .AddOneTransactionStage(new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" }) { Recursive = true })
+                .AddOneTransactionStage(
+                    new SortByScriptNameDecorator(
+                        new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" }) { Recursive = true }
+                    )
+                )
 #else
-                .AddOneTransactionStage(new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" }))
+                .AddOneTransactionStage(
+                    new SortByScriptNameDecorator(
+                        new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" })
+                    )
+                )
 #endif
                 .AddTransactionPerScriptStage(new FileSystemScriptProvider(new[] { @"Sqlite\Views" }) { Idempotent = true })
                 .Build(loggerFactory);
