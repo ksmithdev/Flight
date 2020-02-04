@@ -43,12 +43,12 @@ namespace Flight.Stages
                     command.CommandText = commandText;
                     command.CommandType = System.Data.CommandType.Text;
 
-                    await command.ExecuteNonQueryAsync(cancellationToken);
+                    await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
                 }
             }
 
-            await auditLog.EnsureCreatedAsync(connection, cancellationToken);
-            await auditLog.LogAsync(connection, null, scripts, cancellationToken);
+            await auditLog.EnsureCreatedAsync(connection, cancellationToken).ConfigureAwait(false);
+            await auditLog.StoreEntriesAsync(connection, null, scripts, cancellationToken).ConfigureAwait(false);
         }
     }
 }

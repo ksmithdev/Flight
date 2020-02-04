@@ -29,7 +29,7 @@ namespace Flight.Stages
             if (!initialized)
                 throw new FlightException("Stage not initialized");
 
-            await ExecuteAsync(connection, batchManager, auditLog, cancellationToken);
+            await ExecuteAsync(connection, batchManager, auditLog, cancellationToken).ConfigureAwait(false);
         }
 
         protected abstract Task ExecuteAsync(DbConnection connection, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken = default);

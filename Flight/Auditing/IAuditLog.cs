@@ -9,10 +9,10 @@ namespace Flight.Auditing
     {
         Task EnsureCreatedAsync(DbConnection connection, CancellationToken cancellationToken = default);
 
-        Task LogAsync(DbConnection connection, DbTransaction? transaction, IScript script, CancellationToken cancellationToken = default);
-
-        Task LogAsync(DbConnection connection, DbTransaction? transaction, IEnumerable<IScript> scripts, CancellationToken cancellationToken = default);
-
         Task<string?> ReadLastAppliedChecksumAsync(DbConnection connection, IScript script, CancellationToken cancellationToken = default);
+
+        Task StoreEntriesAsync(DbConnection connection, DbTransaction? transaction, IEnumerable<IScript> scripts, CancellationToken cancellationToken = default);
+
+        Task StoreEntryAsync(DbConnection connection, DbTransaction? transaction, IScript script, CancellationToken cancellationToken = default);
     }
 }

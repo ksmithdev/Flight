@@ -36,10 +36,10 @@ namespace Flight.Stages
                     if (cancellationToken.IsCancellationRequested)
                         cancellationToken.ThrowIfCancellationRequested();
 
-                    await command.ExecuteNonQueryAsync(cancellationToken);
+                    await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
                 }
 
-                await auditLog.LogAsync(connection, null, script, cancellationToken);
+                await auditLog.StoreEntryAsync(connection, null, script, cancellationToken).ConfigureAwait(false);
             }
         }
     }

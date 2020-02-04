@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,10 +24,10 @@ namespace Flight
             bool generateSchema = false;
             using (var command = connection.CreateCommand())
             {
-                command.CommandText = $@"SELECT COUNT(1) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME=@schema;";
+                command.CommandText = "SELECT COUNT(1) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME=@schema;";
                 command.AddParameter("@schema", schemaName);
 
-                var count = await command.ExecuteScalarAsync(cancellationToken);
+                var count = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
 
                 generateSchema = count.Equals(0);
             }
@@ -36,8 +35,8 @@ namespace Flight
             if (generateSchema)
             {
                 using var command = connection.CreateCommand();
-                command.CommandText = $@"CREATE SCHEMA [{schemaName}]";
-                await command.ExecuteNonQueryAsync(cancellationToken);
+                command.CommandText = $"CREATE SCHEMA [{schemaName}]";
+                await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             }
 
             bool generateTable = false;
@@ -48,7 +47,7 @@ namespace Flight
                 command.AddParameter("@schema", schemaName);
                 command.AddParameter("@table", tableName);
 
-                var count = await command.ExecuteScalarAsync(cancellationToken);
+                var count = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
 
                 generateTable = count.Equals(0);
             }
@@ -64,30 +63,31 @@ namespace Flight
     AppliedBy nvarchar(104) NOT NULL
 );";
 
-                await command.ExecuteNonQueryAsync(cancellationToken);
+                await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             }
         }
 
-        public override async Task LogAsync(DbConnection connection, DbTransaction? transaction, IScript script, CancellationToken cancellationToken)
+        public override async Task StoreEntryAsync(DbConnection connection, DbTransaction? transaction, IScript script, CancellationToken cancellationToken)
         {
             using var command = connection.CreateCommand();
             command.Transaction = transaction;
-            command.CommandText = $@"INSERT INTO [{schemaName}].[{tableName}] (ScriptName, Checksum, Idempotent, Applied, AppliedBy) VALUES (@scriptName, @checksum, @idempotent, GETUTCDATE(), CURRENT_USER)";
+            command.CommandText = $"INSERT INTO [{schemaName}].[{tableName}] (ScriptName, Checksum, Idempotent, Applied, AppliedBy) VALUES (@scriptName, @checksum, @idempotent, GETUTCDATE(), CURRENT_USER)";
             command.AddParameter("@scriptName", script.ScriptName);
             command.AddParameter("@checksum", script.Checksum);
             command.AddParameter("@idempotent", script.Idempotent);
 
-            await command.ExecuteNonQueryAsync(cancellationToken);
+            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        protected override async Task<ILookup<string, AuditEntry>> LoadAuditEntriesAsync(DbConnection connection, CancellationToken cancellationToken)
+        protected override async Task<IEnumerable<AuditEntry>> LoadEntriesAsync(DbConnection connection, CancellationToken cancellationToken)
         {
             var auditEntries = new List<AuditEntry>();
 
             using var command = connection.CreateCommand();
-            command.CommandText = $@"SELECT ScriptName, Checksum, Idempotent, Applied, AppliedBy FROM [{schemaName}].[{tableName}]";
-            using var reader = await command.ExecuteReaderAsync(cancellationToken);
-            while (await reader.ReadAsync(cancellationToken))
+            command.CommandText = $"SELECT ScriptName, Checksum, Idempotent, Applied, AppliedBy FROM [{schemaName}].[{tableName}]";
+
+            using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
                 auditEntries.Add(new AuditEntry
                 {
@@ -99,7 +99,7 @@ namespace Flight
                 });
             }
 
-            return auditEntries.OrderByDescending(e => e.Applied).ToLookup(e => e.ScriptName, StringComparer.OrdinalIgnoreCase);
+            return auditEntries;
         }
     }
 }

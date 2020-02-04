@@ -41,11 +41,11 @@ namespace Flight.Stages
                         if (cancellationToken.IsCancellationRequested)
                             cancellationToken.ThrowIfCancellationRequested();
 
-                        await command.ExecuteNonQueryAsync(cancellationToken);
+                        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
                     }
                 }
 
-                await auditLog.LogAsync(connection, transaction, scripts, cancellationToken);
+                await auditLog.StoreEntriesAsync(connection, transaction, scripts, cancellationToken).ConfigureAwait(false);
 
                 transaction.Commit();
             }

@@ -12,7 +12,7 @@ namespace Flight.Stages
 {
     public abstract class ExecutionStageBase : StageBase
     {
-        public ExecutionStageBase(IScriptProvider scriptProvider)
+        protected ExecutionStageBase(IScriptProvider scriptProvider)
         {
             ScriptProvider = scriptProvider;
         }
@@ -30,12 +30,12 @@ namespace Flight.Stages
 
         protected override async Task ExecuteAsync(DbConnection connection, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken = default)
         {
-            var changeSet = await CreateChangeSetAsync(connection, auditLog);
+            var changeSet = await CreateChangeSetAsync(connection, auditLog).ConfigureAwait(false);
 
             Logger.LogInformation($"Change set contains {changeSet.Count} script(s)");
 
-            if (changeSet.Any())
-                await ApplyAsync(connection, changeSet, batchManager, auditLog, cancellationToken);
+            if (changeSet.Count > 0)
+                await ApplyAsync(connection, changeSet, batchManager, auditLog, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<List<IScript>> CreateChangeSetAsync(DbConnection connection, IAuditLog auditLog)
@@ -48,7 +48,7 @@ namespace Flight.Stages
             foreach (var script in scripts)
             {
                 Logger.LogDebug($"Comparing {script.ScriptName}, checksum={script.Checksum}, idempotent={script.Idempotent}");
-                var checksum = await auditLog.ReadLastAppliedChecksumAsync(connection, script);
+                var checksum = await auditLog.ReadLastAppliedChecksumAsync(connection, script).ConfigureAwait(false);
                 if (checksum == null)
                 {
                     Logger.LogDebug($"No existing checksum found for {script.ScriptName}. Adding to change set.");

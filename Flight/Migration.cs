@@ -37,7 +37,7 @@ namespace Flight
                 logger.LogInformation($"{stages.Count()} stages loaded");
 
                 using var connection = connectionFactory.Create();
-                await connection.OpenAsync();
+                await connection.OpenAsync().ConfigureAwait(false);
 
                 logger.LogDebug($"Successfully established connection to {connection.ConnectionString}");
 
@@ -45,7 +45,7 @@ namespace Flight
                 {
                     logger.LogDebug($"Migrating stage {stage.GetType()}");
 
-                    await stage.MigrateAsync(connection, batchManager, auditLog, cancellationToken);
+                    await stage.MigrateAsync(connection, batchManager, auditLog, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (FlightException)

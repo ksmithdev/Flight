@@ -24,8 +24,12 @@ namespace Flight.Providers
             Logger.LogTrace($"{nameof(GetScripts)} starting");
 
             foreach (var scriptProvider in scriptProviders)
+            {
                 foreach (var script in scriptProvider.GetScripts())
+                {
                     yield return script;
+                }
+            }
 
             Logger.LogTrace($"{nameof(GetScripts)} ending");
         }

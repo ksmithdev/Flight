@@ -10,7 +10,7 @@ namespace Flight
 {
     public class MigrationBuilder
     {
-        private readonly CompositeScriptProvider configuratioScriptProviders;
+        private readonly CompositeScriptProvider initializationScriptProvider;
         private readonly IList<IStage> stages;
         private IAuditLog? auditor;
         private IBatchManager? batchManager;
@@ -18,7 +18,7 @@ namespace Flight
 
         public MigrationBuilder()
         {
-            configuratioScriptProviders = new CompositeScriptProvider();
+            initializationScriptProvider = new CompositeScriptProvider();
             stages = new List<IStage>();
         }
 
@@ -45,7 +45,7 @@ namespace Flight
             if (auditor == null)
                 throw new InvalidOperationException("cannot build migration without setting auditor");
 
-            var migrationStages = new List<IStage>() { new InitializationStage(configuratioScriptProviders) };
+            var migrationStages = new List<IStage>() { new InitializationStage(initializationScriptProvider) };
             foreach (var stage in stages)
                 migrationStages.Add(stage);
 
@@ -62,7 +62,7 @@ namespace Flight
 
         public MigrationBuilder InitializeDatabase(IScriptProvider scriptProvider)
         {
-            configuratioScriptProviders.AddScriptProvider(scriptProvider);
+            initializationScriptProvider.AddScriptProvider(scriptProvider);
 
             return this;
         }

@@ -17,22 +17,9 @@ namespace Flight.Auditing
 
         public abstract Task EnsureCreatedAsync(DbConnection connection, CancellationToken cancellationToken = default);
 
-        public abstract Task LogAsync(DbConnection connection, DbTransaction? transaction, IScript script, CancellationToken cancellationToken = default);
-
-        public virtual async Task LogAsync(DbConnection connection, DbTransaction? transaction, IEnumerable<IScript> scripts, CancellationToken cancellationToken = default)
-        {
-            foreach (var script in scripts)
-            {
-                if (cancellationToken.IsCancellationRequested)
-                    break;
-
-                await LogAsync(connection, transaction, script, cancellationToken);
-            }
-        }
-
         public async Task<string?> ReadLastAppliedChecksumAsync(DbConnection connection, IScript script, CancellationToken cancellationToken = default)
         {
-            auditLog ??= await LoadAuditEntriesAsync(connection, cancellationToken);
+            auditLog ??= await GenerateAuditLogAsync(connection, cancellationToken).ConfigureAwait(false);
 
             var entries = auditLog[script.ScriptName];
             var entry = entries?.FirstOrDefault();
@@ -40,7 +27,27 @@ namespace Flight.Auditing
             return entry?.Checksum;
         }
 
-        protected abstract Task<ILookup<string, AuditEntry>> LoadAuditEntriesAsync(DbConnection connection, CancellationToken cancellationToken);
+        public virtual async Task StoreEntriesAsync(DbConnection connection, DbTransaction? transaction, IEnumerable<IScript> scripts, CancellationToken cancellationToken = default)
+        {
+            foreach (var script in scripts)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    break;
+
+                await StoreEntryAsync(connection, transaction, script, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        public abstract Task StoreEntryAsync(DbConnection connection, DbTransaction? transaction, IScript script, CancellationToken cancellationToken = default);
+
+        protected abstract Task<IEnumerable<AuditEntry>> LoadEntriesAsync(DbConnection connection, CancellationToken cancellationToken);
+
+        private async Task<ILookup<string, AuditEntry>> GenerateAuditLogAsync(DbConnection connection, CancellationToken cancellationToken)
+        {
+            var entries = await LoadEntriesAsync(connection, cancellationToken).ConfigureAwait(false);
+
+            return entries.OrderByDescending(e => e.Applied).ToLookup(e => e.ScriptName, StringComparer.OrdinalIgnoreCase);
+        }
 
         protected class AuditEntry
         {
