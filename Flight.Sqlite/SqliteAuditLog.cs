@@ -20,20 +20,16 @@ namespace Flight
 
         public override async Task EnsureCreatedAsync(DbConnection connection, CancellationToken cancellationToken)
         {
-            bool generateTable = false;
-            using (var command = connection.CreateCommand())
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT COUNT(1) FROM sqlite_master WHERE name=@table and type='table';";
+            command.AddParameter("@table", auditTable);
+
+            var result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+            var count = Convert.ToInt32(result);
+
+            if (count == 0)
             {
-                command.CommandText = "SELECT COUNT(1) FROM sqlite_master WHERE name=@table and type='table';";
-                command.AddParameter("@table", auditTable);
-
-                var auditCount = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
-
-                generateTable = auditCount.Equals(0L);
-            }
-
-            if (generateTable)
-            {
-                using var command = connection.CreateCommand();
+                command.Parameters.Clear();
                 command.CommandText = $@"CREATE TABLE ""{auditTable}"" (
     script_name TEXT     NOT NULL,
     checksum    TEXT     NOT NULL,

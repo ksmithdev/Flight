@@ -16,9 +16,9 @@ namespace Flight.Providers
 
         public string Filter { get; set; } = "*.sql";
 
-        public bool Idempotent { get; set; } = false;
+        public bool Idempotent { get; set; }
 
-        public bool Recursive { get; set; } = false;
+        public bool Recursive { get; set; }
 
         public bool Sorted { get; set; } = true;
 
@@ -28,7 +28,7 @@ namespace Flight.Providers
 
             var scripts = new List<FileSystemScript>();
 
-            var paths = locations.Select(l => Path.GetFullPath(l));
+            var paths = locations.Select(Path.GetFullPath);
 
             foreach (var path in paths.Distinct())
             {
@@ -38,9 +38,7 @@ namespace Flight.Providers
                     continue;
                 }
 
-                var filePaths = Directory.GetFiles(path, Filter, Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-
-                foreach (var filePath in filePaths)
+                foreach (var filePath in Directory.GetFiles(path, Filter, Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
                     scripts.Add(new FileSystemScript(filePath, Idempotent));
             }
 

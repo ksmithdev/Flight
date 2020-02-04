@@ -46,7 +46,9 @@ namespace Flight.Auditing
         {
             var entries = await LoadEntriesAsync(connection, cancellationToken).ConfigureAwait(false);
 
-            return entries.OrderByDescending(e => e.Applied).ToLookup(e => e.ScriptName, StringComparer.OrdinalIgnoreCase);
+            return entries
+                .OrderByDescending(e => e.Applied)
+                .ToLookup(e => e.ScriptName, StringComparer.OrdinalIgnoreCase);
         }
 
         protected class AuditEntry

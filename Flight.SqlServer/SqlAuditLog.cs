@@ -15,31 +15,29 @@ namespace Flight
 
         public SqlAuditLog(string schemaName, string tableName)
         {
+            // TODO: check schemaName and tableName for invalid characters and throw exception to prevent a possible sql injection attack
             this.schemaName = schemaName;
             this.tableName = tableName;
         }
 
         public override async Task EnsureCreatedAsync(DbConnection connection, CancellationToken cancellationToken)
         {
-            bool generateSchema = false;
             using (var command = connection.CreateCommand())
             {
                 command.CommandText = "SELECT COUNT(1) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME=@schema;";
                 command.AddParameter("@schema", schemaName);
 
-                var count = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+                var result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+                var count = Convert.ToInt32(result);
 
-                generateSchema = count.Equals(0);
+                if (count == 0)
+                {
+                    command.Parameters.Clear();
+                    command.CommandText = $"CREATE SCHEMA [{schemaName}]";
+                    await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                }
             }
 
-            if (generateSchema)
-            {
-                using var command = connection.CreateCommand();
-                command.CommandText = $"CREATE SCHEMA [{schemaName}]";
-                await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-            }
-
-            bool generateTable = false;
             using (var command = connection.CreateCommand())
             {
                 command.CommandText = "SELECT COUNT(1) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=@schema AND TABLE_NAME=@table;";
@@ -47,15 +45,13 @@ namespace Flight
                 command.AddParameter("@schema", schemaName);
                 command.AddParameter("@table", tableName);
 
-                var count = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+                var result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+                var count = Convert.ToInt32(result);
 
-                generateTable = count.Equals(0);
-            }
-
-            if (generateTable)
-            {
-                using var command = connection.CreateCommand();
-                command.CommandText = $@"CREATE TABLE [{schemaName}].[{tableName}] (
+                if (count == 0)
+                {
+                    command.Parameters.Clear();
+                    command.CommandText = $@"CREATE TABLE [{schemaName}].[{tableName}] (
     ScriptName nvarchar(255) NOT NULL,
     Checksum nvarchar(25) NOT NULL,
     Idempotent bit NOT NULL,
@@ -63,7 +59,8 @@ namespace Flight
     AppliedBy nvarchar(104) NOT NULL
 );";
 
-                await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                    await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                }
             }
         }
 
