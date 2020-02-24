@@ -7,9 +7,9 @@ namespace Flight.Auditing
 {
     public interface IAuditLog
     {
-        Task EnsureCreatedAsync(DbConnection connection, CancellationToken cancellationToken = default);
+        Task<IEnumerable<IScript>> CreateChangeSetAsync(DbConnection connection, IEnumerable<IScript> scripts, CancellationToken cancellationToken = default);
 
-        Task<string?> ReadLastAppliedChecksumAsync(DbConnection connection, IScript script, CancellationToken cancellationToken = default);
+        Task EnsureCreatedAsync(DbConnection connection, CancellationToken cancellationToken = default);
 
         Task StoreEntriesAsync(DbConnection connection, DbTransaction? transaction, IEnumerable<IScript> scripts, CancellationToken cancellationToken = default);
 

@@ -9,23 +9,34 @@ namespace Flight.Auditing
 {
     public abstract class AuditLogBase : IAuditLog
     {
-        private ILookup<string, AuditEntry>? auditLog;
-
-        protected AuditLogBase()
+        public async Task<IEnumerable<IScript>> CreateChangeSetAsync(DbConnection connection, IEnumerable<IScript> scripts, CancellationToken cancellationToken = default)
         {
+            var auditLog = await GenerateAuditLogAsync(connection, cancellationToken).ConfigureAwait(false);
+
+            var changeSet = new List<IScript>();
+            foreach (var script in scripts)
+            {
+                var entries = auditLog[script.ScriptName];
+
+                if (entries?.Any(e => e.Checksum == script.Checksum) == false)
+                {
+                    changeSet.Add(script);
+                }
+                else
+                {
+                    var lastApplied = entries.FirstOrDefault();
+
+                    if (script.Idempotent && script.Checksum != lastApplied.Checksum)
+                    {
+                        changeSet.Add(script);
+                    }
+                }
+            }
+
+            return changeSet;
         }
 
         public abstract Task EnsureCreatedAsync(DbConnection connection, CancellationToken cancellationToken = default);
-
-        public async Task<string?> ReadLastAppliedChecksumAsync(DbConnection connection, IScript script, CancellationToken cancellationToken = default)
-        {
-            auditLog ??= await GenerateAuditLogAsync(connection, cancellationToken).ConfigureAwait(false);
-
-            var entries = auditLog[script.ScriptName];
-            var entry = entries?.FirstOrDefault();
-
-            return entry?.Checksum;
-        }
 
         public virtual async Task StoreEntriesAsync(DbConnection connection, DbTransaction? transaction, IEnumerable<IScript> scripts, CancellationToken cancellationToken = default)
         {
