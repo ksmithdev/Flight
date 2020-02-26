@@ -7,10 +7,16 @@ using System.Threading.Tasks;
 
 namespace Flight.Auditing
 {
-    public abstract class AuditLogBase : IAuditLog
+    public abstract class AuditLogBase : IAuditLog, IAuditReader
     {
         public async Task<IEnumerable<IScript>> CreateChangeSetAsync(DbConnection connection, IEnumerable<IScript> scripts, CancellationToken cancellationToken = default)
         {
+            if (connection == null)
+                throw new ArgumentNullException(nameof(connection));
+
+            if (scripts == null)
+                throw new ArgumentNullException(nameof(scripts));
+
             var auditLog = await GenerateAuditLogAsync(connection, cancellationToken).ConfigureAwait(false);
 
             var changeSet = new List<IScript>();
@@ -40,6 +46,9 @@ namespace Flight.Auditing
 
         public virtual async Task StoreEntriesAsync(DbConnection connection, DbTransaction? transaction, IEnumerable<IScript> scripts, CancellationToken cancellationToken = default)
         {
+            if (scripts == null)
+                throw new ArgumentNullException(nameof(scripts));
+
             foreach (var script in scripts)
             {
                 if (cancellationToken.IsCancellationRequested)

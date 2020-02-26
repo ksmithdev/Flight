@@ -11,6 +11,6 @@ namespace Flight.Stages
     {
         void Initialize(ILoggerFactory loggerFactory);
 
-        Task MigrateAsync(DbConnection connection, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken = default);
+        Task MigrateAsync(DbConnection connection, IBatchManager batchManager, IAuditLog auditStore, CancellationToken cancellationToken = default);
     }
 }

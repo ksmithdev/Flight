@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,7 +26,7 @@ namespace Flight
             command.AddParameter("@table", auditTable);
 
             var result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
-            var count = Convert.ToInt32(result);
+            var count = Convert.ToInt32(result, CultureInfo.InvariantCulture);
 
             if (count == 0)
             {

@@ -25,17 +25,24 @@ namespace Flight.Stages
             base.Initialize(loggerFactory);
         }
 
-        protected async override Task ExecuteAsync(DbConnection connection, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken = default)
+        protected override async Task ExecuteAsync(DbConnection connection, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken = default)
         {
+            if (connection == null)
+                throw new ArgumentNullException(nameof(connection));
+
+            if (batchManager == null)
+                throw new ArgumentNullException(nameof(batchManager));
+
+            if (auditLog == null)
+                throw new ArgumentNullException(nameof(auditLog));
+
             var scripts = ScriptProvider.GetScripts();
 
             foreach (var script in scripts)
             {
                 Logger.LogInformation($"Applying {script.ScriptName}, Checksum: {script.Checksum}, Idempotent: {script.Idempotent}");
 
-                var batches = batchManager.Split(script);
-
-                foreach (var commandText in batches)
+                foreach (var commandText in batchManager.Split(script))
                 {
                     Logger.LogDebug(commandText);
 

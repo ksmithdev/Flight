@@ -26,8 +26,8 @@ namespace Flight.Providers
 
         private string GetChecksum()
         {
-            using var md5 = System.Security.Cryptography.MD5.Create();
-            var hash = md5.ComputeHash(bytes.Value);
+            using var sha = System.Security.Cryptography.SHA256.Create();
+            var hash = sha.ComputeHash(bytes.Value);
 
             return Convert.ToBase64String(hash);
         }

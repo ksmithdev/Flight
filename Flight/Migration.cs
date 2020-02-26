@@ -32,7 +32,7 @@ namespace Flight
         {
             try
             {
-                logger.LogInformation($"Migration started");
+                logger.LogInformation("Migration started");
                 logger.LogInformation($"{stages.Count()} stages loaded");
 
                 using var connection = connectionFactory.Create();
@@ -57,7 +57,7 @@ namespace Flight
             }
             finally
             {
-                logger.LogInformation($"Migration complete");
+                logger.LogInformation("Migration complete");
             }
         }
     }

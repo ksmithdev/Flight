@@ -12,16 +12,16 @@ namespace Flight.Stages
 {
     public abstract class ExecutionStageBase : StageBase
     {
+        private readonly IScriptProvider scriptProvider;
+
         protected ExecutionStageBase(IScriptProvider scriptProvider)
         {
-            ScriptProvider = scriptProvider;
+            this.scriptProvider = scriptProvider;
         }
-
-        protected IScriptProvider ScriptProvider { get; }
 
         public override void Initialize(ILoggerFactory loggerFactory)
         {
-            ScriptProvider.Initialize(loggerFactory);
+            scriptProvider.Initialize(loggerFactory);
 
             base.Initialize(loggerFactory);
         }
@@ -30,7 +30,10 @@ namespace Flight.Stages
 
         protected override async Task ExecuteAsync(DbConnection connection, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken = default)
         {
-            var scripts = ScriptProvider.GetScripts();
+            if (auditLog == null)
+                throw new System.ArgumentNullException(nameof(auditLog));
+
+            var scripts = scriptProvider.GetScripts();
             var changeSet = await auditLog.CreateChangeSetAsync(connection, scripts, cancellationToken).ConfigureAwait(false);
 
             Logger.LogInformation($"Change set contains {changeSet.Count()} script(s)");

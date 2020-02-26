@@ -31,6 +31,9 @@ namespace Flight
 
         public MigrationBuilder AddStage(Func<IStage> stageFactory)
         {
+            if (stageFactory == null)
+                throw new ArgumentNullException(nameof(stageFactory));
+
             stages.Add(stageFactory());
 
             return this;

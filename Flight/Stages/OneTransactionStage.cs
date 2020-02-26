@@ -20,6 +20,18 @@ namespace Flight.Stages
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "<Pending>")]
         protected override async Task ApplyAsync(DbConnection connection, IEnumerable<IScript> scripts, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken = default)
         {
+            if (connection == null)
+                throw new ArgumentNullException(nameof(connection));
+
+            if (scripts == null)
+                throw new ArgumentNullException(nameof(scripts));
+
+            if (batchManager == null)
+                throw new ArgumentNullException(nameof(batchManager));
+
+            if (auditLog == null)
+                throw new ArgumentNullException(nameof(auditLog));
+
             using var transaction = connection.BeginTransaction();
             try
             {
