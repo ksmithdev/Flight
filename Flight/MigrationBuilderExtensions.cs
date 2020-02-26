@@ -1,33 +1,38 @@
-﻿using Flight.Providers;
-using Flight.Stages;
+﻿using Flight.Executors;
 using System;
 
 namespace Flight
 {
     public static class MigrationBuilderExtensions
     {
-        public static MigrationBuilder AddNoTransactionStage(this MigrationBuilder migrationBuilder, IScriptProvider scriptProvider)
+        public static MigrationBuilder UseNoTransaction(this MigrationBuilder migrationBuilder)
         {
-            if (migrationBuilder is null)
+            if (migrationBuilder == null)
                 throw new ArgumentNullException(nameof(migrationBuilder));
 
-            return migrationBuilder.AddStage(new NoTransactionStage(scriptProvider));
+            migrationBuilder.SetScriptExecutor(new NoTransactionExecutor());
+
+            return migrationBuilder;
         }
 
-        public static MigrationBuilder AddOneTransactionStage(this MigrationBuilder migrationBuilder, IScriptProvider scriptProvider)
+        public static MigrationBuilder UseOneTransaction(this MigrationBuilder migrationBuilder)
         {
-            if (migrationBuilder is null)
+            if (migrationBuilder == null)
                 throw new ArgumentNullException(nameof(migrationBuilder));
 
-            return migrationBuilder.AddStage(new OneTransactionStage(scriptProvider));
+            migrationBuilder.SetScriptExecutor(new OneTransactionExecutor());
+
+            return migrationBuilder;
         }
 
-        public static MigrationBuilder AddTransactionPerScriptStage(this MigrationBuilder migrationBuilder, IScriptProvider scriptProvider)
+        public static MigrationBuilder UseTransactionPerScript(this MigrationBuilder migrationBuilder)
         {
-            if (migrationBuilder is null)
+            if (migrationBuilder == null)
                 throw new ArgumentNullException(nameof(migrationBuilder));
 
-            return migrationBuilder.AddStage(new TransactionPerScriptStage(scriptProvider));
+            migrationBuilder.SetScriptExecutor(new TransactionPerScriptExecutor());
+
+            return migrationBuilder;
         }
     }
 }

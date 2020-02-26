@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Flight.Providers
 {
@@ -21,8 +20,6 @@ namespace Flight.Providers
 
         public override IEnumerable<IScript> GetScripts()
         {
-            Logger.LogTrace($"{nameof(GetScripts)} starting");
-
             foreach (var scriptProvider in scriptProviders)
             {
                 foreach (var script in scriptProvider.GetScripts())
@@ -30,16 +27,6 @@ namespace Flight.Providers
                     yield return script;
                 }
             }
-
-            Logger.LogTrace($"{nameof(GetScripts)} ending");
-        }
-
-        public override void Initialize(ILoggerFactory loggerFactory)
-        {
-            foreach (var scriptProvider in scriptProviders)
-                scriptProvider.Initialize(loggerFactory);
-
-            base.Initialize(loggerFactory);
         }
 
         public bool RemoveScriptProvider(IScriptProvider scriptProvider) => scriptProviders.Remove(scriptProvider);

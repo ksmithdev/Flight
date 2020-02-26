@@ -1,41 +1,18 @@
-﻿using Flight.Auditing;
-using Flight.Database;
-using Flight.Providers;
-using Microsoft.Extensions.Logging;
+﻿using Flight.Database;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Flight.Stages
+namespace Flight.Executors
 {
-    public class TransactionPerScriptStage : ExecutionStageBase
+    internal class TransactionPerScriptExecutor : IScriptExecutor
     {
-        public TransactionPerScriptStage(IScriptProvider scriptProvider)
-            : base(scriptProvider)
+        public async Task ExecuteAsync(DbConnection connection, IEnumerable<IScript> scripts, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken)
         {
-        }
-
-        protected override async Task ApplyAsync(DbConnection connection, IEnumerable<IScript> scripts, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken = default)
-        {
-            if (connection == null)
-                throw new ArgumentNullException(nameof(connection));
-
-            if (scripts == null)
-                throw new ArgumentNullException(nameof(scripts));
-
-            if (batchManager == null)
-                throw new ArgumentNullException(nameof(batchManager));
-
-            if (auditLog == null)
-                throw new ArgumentNullException(nameof(auditLog));
-
             foreach (var script in scripts)
             {
-                Logger.LogInformation($"Applying {script.ScriptName}, Checksum: {script.Checksum}, Idempotent: {script.Idempotent}");
-                Logger.LogDebug(script.Text);
-
                 using var transaction = connection.BeginTransaction();
                 try
                 {

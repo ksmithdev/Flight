@@ -1,45 +1,21 @@
-﻿using Flight.Auditing;
-using Flight.Database;
-using Flight.Providers;
-using Microsoft.Extensions.Logging;
+﻿using Flight.Database;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Flight.Stages
+namespace Flight.Executors
 {
-    public class OneTransactionStage : ExecutionStageBase
+    internal class OneTransactionExecutor : IScriptExecutor
     {
-        public OneTransactionStage(IScriptProvider scriptProvider)
-            : base(scriptProvider)
+        public async Task ExecuteAsync(DbConnection connection, IEnumerable<IScript> scripts, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken)
         {
-        }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "<Pending>")]
-        protected override async Task ApplyAsync(DbConnection connection, IEnumerable<IScript> scripts, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken = default)
-        {
-            if (connection == null)
-                throw new ArgumentNullException(nameof(connection));
-
-            if (scripts == null)
-                throw new ArgumentNullException(nameof(scripts));
-
-            if (batchManager == null)
-                throw new ArgumentNullException(nameof(batchManager));
-
-            if (auditLog == null)
-                throw new ArgumentNullException(nameof(auditLog));
-
             using var transaction = connection.BeginTransaction();
             try
             {
                 foreach (var script in scripts)
                 {
-                    Logger.LogInformation($"Applying {script.ScriptName}, Checksum: {script.Checksum}, Idempotent: {script.Idempotent}");
-                    Logger.LogDebug(script.Text);
-
                     foreach (var commandText in batchManager.Split(script))
                     {
                         if (string.IsNullOrWhiteSpace(commandText))

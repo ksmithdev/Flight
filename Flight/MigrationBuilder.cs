@@ -1,40 +1,36 @@
-﻿using Flight.Auditing;
-using Flight.Database;
+﻿using Flight.Database;
+using Flight.Executors;
 using Flight.Providers;
-using Flight.Stages;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 
 namespace Flight
 {
     public class MigrationBuilder
     {
-        private readonly CompositeScriptProvider initializationScriptProvider;
-        private readonly IList<IStage> stages;
-        private IAuditLog? auditor;
+        private readonly CompositeScriptProvider migrationScriptProvider;
+        private readonly CompositeScriptProvider preMigrationScriptProvier;
+        private IAuditLog? auditLog;
         private IBatchManager? batchManager;
         private IConnectionFactory? connectionFactory;
+        private IScriptExecutor? scriptExecutor;
 
         public MigrationBuilder()
         {
-            initializationScriptProvider = new CompositeScriptProvider();
-            stages = new List<IStage>();
+            preMigrationScriptProvier = new CompositeScriptProvider();
+            migrationScriptProvider = new CompositeScriptProvider();
         }
 
-        public MigrationBuilder AddStage(IStage migrationStage)
+        public MigrationBuilder AddMigrationScripts(IScriptProvider scriptProvider)
         {
-            stages.Add(migrationStage);
+            migrationScriptProvider.AddScriptProvider(scriptProvider);
 
             return this;
         }
 
-        public MigrationBuilder AddStage(Func<IStage> stageFactory)
+        public MigrationBuilder AddPreMigrationScripts(IScriptProvider scriptProvider)
         {
-            if (stageFactory == null)
-                throw new ArgumentNullException(nameof(stageFactory));
-
-            stages.Add(stageFactory());
+            preMigrationScriptProvier.AddScriptProvider(scriptProvider);
 
             return this;
         }
@@ -45,35 +41,26 @@ namespace Flight
                 throw new InvalidOperationException("cannot build migration without setting connection factory");
             if (batchManager == null)
                 throw new InvalidOperationException("cannot build migration without setting batch manager");
-            if (auditor == null)
-                throw new InvalidOperationException("cannot build migration without setting auditor");
-
-            var migrationStages = new List<IStage>() { new InitializationStage(initializationScriptProvider) };
-            foreach (var stage in stages)
-                migrationStages.Add(stage);
-
-            foreach (var stage in migrationStages)
-                stage.Initialize(loggerFactory);
+            if (auditLog == null)
+                throw new InvalidOperationException("cannot build migration without setting audit log");
+            if (scriptExecutor == null)
+                throw new InvalidOperationException("cannot build migration without setting script executor");
 
             return new Migration(
                 connectionFactory,
+                scriptExecutor,
+                auditLog,
                 batchManager,
-                auditor,
-                migrationStages,
-                loggerFactory);
+                preMigrationScriptProvier,
+                migrationScriptProvider);
         }
 
-        public MigrationBuilder InitializeDatabase(IScriptProvider scriptProvider)
-        {
-            initializationScriptProvider.AddScriptProvider(scriptProvider);
-
-            return this;
-        }
-
-        public void SetAuditor(IAuditLog auditor) => this.auditor = auditor ?? throw new ArgumentNullException(nameof(auditor));
+        public void SetAuditLog(IAuditLog auditLog) => this.auditLog = auditLog ?? throw new ArgumentNullException(nameof(auditLog));
 
         public void SetBatchManager(IBatchManager batchManager) => this.batchManager = batchManager ?? throw new ArgumentNullException(nameof(batchManager));
 
         public void SetConnectionFactory(IConnectionFactory connectionFactory) => this.connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
+
+        public void SetScriptExecutor(IScriptExecutor scriptExecutor) => this.scriptExecutor = scriptExecutor ?? throw new ArgumentNullException(nameof(scriptExecutor));
     }
 }

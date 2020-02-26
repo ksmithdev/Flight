@@ -1,13 +1,13 @@
-﻿using System;
-using System.Threading.Tasks;
-using Flight;
+﻿using Flight;
 using Flight.Providers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 
 namespace FlightSample
 {
-    internal class Program
+    internal static class Program
     {
         public static IConfiguration Configuration { get; private set; }
 
@@ -29,42 +29,28 @@ namespace FlightSample
 
             var migration = new MigrationBuilder()
                 .UseSqlServer(@"(LocalDB)\MSSQLLocalDB", database: "MigrationTest", auditSchema: "Flight", auditTable: "ChangeSets")
+                .UseOneTransaction()
 #if DEBUG
-                .InitializeDatabase(new FileSystemScriptProvider(new[] { @"SqlServer\Initialization" }))
-                .AddOneTransactionStage(
-                    new SortByScriptNameDecorator(
-                        new FileSystemScriptProvider(new[] { @"SqlServer\Migrations" }) { Recursive = true }
-                    )
-                )
+                .AddPreMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Initialization" }))
+                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Migrations" }) { Recursive = true, Sorted = true })
 #else
-                .AddOneTransactionStage(
-                    new SortByScriptNameDecorator(
-                        new FileSystemScriptProvider(new[] { @"SqlServer\Migrations" })
-                    )
-                )
+                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Migrations" }) { Sorted = true })
 #endif
-                .AddTransactionPerScriptStage(new FileSystemScriptProvider(new[] { @"SqlServer\Views" }) { Idempotent = true })
+                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Views" }) { Idempotent = true })
                 .Build(loggerFactory);
 
             await migration.MigrateAsync();
 
             var sqliteMigration = new MigrationBuilder()
-                .UseSqlite(@"Data Source=:memory:;", auditTable: "changesets")
+                .UseSqlite("Data Source=:memory:;", auditTable: "changesets")
+                .UseOneTransaction()
 #if DEBUG
-                .InitializeDatabase(new FileSystemScriptProvider(new[] { @"Sqlite\Initialization" }))
-                .AddOneTransactionStage(
-                    new SortByScriptNameDecorator(
-                        new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" }) { Recursive = true }
-                    )
-                )
+                .AddPreMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Initialization" }))
+                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" }) { Recursive = true, Sorted = true })
 #else
-                .AddOneTransactionStage(
-                    new SortByScriptNameDecorator(
-                        new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" })
-                    )
-                )
+                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" }) { Sorted = true })
 #endif
-                .AddTransactionPerScriptStage(new FileSystemScriptProvider(new[] { @"Sqlite\Views" }) { Idempotent = true })
+                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Views" }) { Idempotent = true })
                 .Build(loggerFactory);
 
             await sqliteMigration.MigrateAsync();

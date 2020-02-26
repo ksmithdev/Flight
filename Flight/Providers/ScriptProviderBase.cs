@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Flight.Providers
 {
@@ -10,10 +8,6 @@ namespace Flight.Providers
         {
         }
 
-        protected ILogger Logger { get; private set; } = NullLogger.Instance;
-
         public abstract IEnumerable<IScript> GetScripts();
-
-        public virtual void Initialize(ILoggerFactory loggerFactory) => Logger = loggerFactory.CreateLogger(GetType());
     }
 }

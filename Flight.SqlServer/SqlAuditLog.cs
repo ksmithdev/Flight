@@ -1,4 +1,4 @@
-﻿using Flight.Auditing;
+﻿using Flight.Database;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace Flight
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "<Pending>")]
     internal class SqlAuditLog : AuditLogBase
     {
         private readonly string schemaName;
@@ -54,7 +53,7 @@ namespace Flight
                     command.Parameters.Clear();
                     command.CommandText = $@"CREATE TABLE [{schemaName}].[{tableName}] (
     ScriptName nvarchar(255) NOT NULL,
-    Checksum nvarchar(25) NOT NULL,
+    Checksum nchar(44) NOT NULL,
     Idempotent bit NOT NULL,
     Applied datetime NOT NULL,
     AppliedBy nvarchar(104) NOT NULL
@@ -63,6 +62,29 @@ namespace Flight
                     await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
                 }
             }
+        }
+
+        public override async Task<IEnumerable<AuditLogEntry>> LoadEntriesAsync(DbConnection connection, CancellationToken cancellationToken)
+        {
+            var auditEntries = new List<AuditLogEntry>();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = $"SELECT ScriptName, Checksum, Idempotent, Applied, AppliedBy FROM [{schemaName}].[{tableName}]";
+
+            using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                auditEntries.Add(new AuditLogEntry
+                {
+                    ScriptName = reader.GetString(0),
+                    Checksum = reader.GetString(1),
+                    Idempotent = reader.GetBoolean(2),
+                    Applied = DateTime.SpecifyKind(reader.GetDateTime(3), DateTimeKind.Utc),
+                    AppliedBy = reader.GetString(4)
+                });
+            }
+
+            return auditEntries;
         }
 
         public override async Task StoreEntryAsync(DbConnection connection, DbTransaction? transaction, IScript script, CancellationToken cancellationToken)
@@ -75,29 +97,6 @@ namespace Flight
             command.AddParameter("@idempotent", script.Idempotent);
 
             await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        protected override async Task<IEnumerable<AuditEntry>> LoadEntriesAsync(DbConnection connection, CancellationToken cancellationToken)
-        {
-            var auditEntries = new List<AuditEntry>();
-
-            using var command = connection.CreateCommand();
-            command.CommandText = $"SELECT ScriptName, Checksum, Idempotent, Applied, AppliedBy FROM [{schemaName}].[{tableName}]";
-
-            using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-            {
-                auditEntries.Add(new AuditEntry
-                {
-                    ScriptName = reader.GetString(0),
-                    Checksum = reader.GetString(1),
-                    Idempotent = reader.GetBoolean(2),
-                    Applied = DateTime.SpecifyKind(reader.GetDateTime(3), DateTimeKind.Utc),
-                    AppliedBy = reader.GetString(4)
-                });
-            }
-
-            return auditEntries;
         }
     }
 }

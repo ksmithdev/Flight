@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace Flight.Providers
@@ -14,7 +13,5 @@ namespace Flight.Providers
         }
 
         public IEnumerable<IScript> GetScripts() => scriptProvider.GetScripts().OrderBy(s => s.ScriptName);
-
-        public void Initialize(ILoggerFactory loggerFactory) => scriptProvider.Initialize(loggerFactory);
     }
 }

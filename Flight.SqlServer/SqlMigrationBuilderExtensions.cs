@@ -14,7 +14,7 @@ namespace Flight
 
             migrationBuilder.SetConnectionFactory(connectionManager);
             migrationBuilder.SetBatchManager(batchManager);
-            migrationBuilder.SetAuditor(auditor);
+            migrationBuilder.SetAuditLog(auditor);
 
             return migrationBuilder;
         }
@@ -30,7 +30,7 @@ namespace Flight
 
             migrationBuilder.SetConnectionFactory(connectionManager);
             migrationBuilder.SetBatchManager(batchManager);
-            migrationBuilder.SetAuditor(auditor);
+            migrationBuilder.SetAuditLog(auditor);
 
             return migrationBuilder;
         }
@@ -46,7 +46,7 @@ namespace Flight
 
             migrationBuilder.SetConnectionFactory(connectionFactory);
             migrationBuilder.SetBatchManager(batchManager);
-            migrationBuilder.SetAuditor(auditor);
+            migrationBuilder.SetAuditLog(auditor);
 
             return migrationBuilder;
         }

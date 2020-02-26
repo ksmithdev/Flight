@@ -1,7 +1,6 @@
-﻿using Flight.Auditing;
-using Flight.Database;
-using Flight.Stages;
-using Microsoft.Extensions.Logging;
+﻿using Flight.Database;
+using Flight.Executors;
+using Flight.Providers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,37 +14,47 @@ namespace Flight
         private readonly IAuditLog auditLog;
         private readonly IBatchManager batchManager;
         private readonly IConnectionFactory connectionFactory;
-        private readonly ILogger logger;
-        private readonly IEnumerable<IStage> stages;
+        private readonly IScriptProvider preMigrationScriptProvider;
+        private readonly IScriptProvider migrationScriptProvider;
+        private readonly IScriptExecutor scriptExecutor;
 
-        public Migration(IConnectionFactory connectionFactory, IBatchManager batchManager, IAuditLog auditLog, IEnumerable<IStage> stages, ILoggerFactory loggerFactory)
+        public Migration(IConnectionFactory connectionFactory, IScriptExecutor scriptExecutor, IAuditLog auditLog, IBatchManager batchManager, IScriptProvider preMigrationScriptProvider, IScriptProvider migrationScriptProvider)
         {
-            this.connectionFactory = connectionFactory;
-            this.batchManager = batchManager;
-            this.auditLog = auditLog;
-            this.stages = stages;
-
-            logger = loggerFactory.CreateLogger(GetType());
+            this.connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
+            this.scriptExecutor = scriptExecutor ?? throw new ArgumentNullException(nameof(scriptExecutor));
+            this.auditLog = auditLog ?? throw new ArgumentNullException(nameof(auditLog));
+            this.batchManager = batchManager ?? throw new ArgumentNullException(nameof(batchManager));
+            this.preMigrationScriptProvider = preMigrationScriptProvider ?? throw new ArgumentNullException(nameof(preMigrationScriptProvider));
+            this.migrationScriptProvider = migrationScriptProvider ?? throw new ArgumentNullException(nameof(migrationScriptProvider));
         }
 
         public async Task MigrateAsync(CancellationToken cancellationToken = default)
         {
             try
             {
-                logger.LogInformation("Migration started");
-                logger.LogInformation($"{stages.Count()} stages loaded");
-
                 using var connection = connectionFactory.Create();
                 await connection.OpenAsync().ConfigureAwait(false);
 
-                logger.LogDebug($"Successfully established connection to {connection.ConnectionString}");
-
-                foreach (var stage in stages)
+                var initializationScripts = preMigrationScriptProvider.GetScripts();
+                foreach (var script in initializationScripts)
                 {
-                    logger.LogDebug($"Migrating stage {stage.GetType()}");
+                    foreach (var commandText in batchManager.Split(script))
+                    {
+                        using var command = connection.CreateCommand();
+                        command.CommandText = commandText;
+                        command.CommandType = System.Data.CommandType.Text;
 
-                    await stage.MigrateAsync(connection, batchManager, auditLog, cancellationToken).ConfigureAwait(false);
+                        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                    }
                 }
+                await auditLog.EnsureCreatedAsync(connection, cancellationToken).ConfigureAwait(false);
+                await auditLog.StoreEntriesAsync(connection, null, initializationScripts, cancellationToken).ConfigureAwait(false);
+
+                var auditLogEntries = await auditLog.LoadEntriesAsync(connection, cancellationToken).ConfigureAwait(false);
+
+                var changeSet = CreateChangeSet(auditLogEntries);
+                if (changeSet.Count > 0)
+                    await scriptExecutor.ExecuteAsync(connection, changeSet, batchManager, auditLog, cancellationToken).ConfigureAwait(false);
             }
             catch (FlightException)
             {
@@ -55,10 +64,35 @@ namespace Flight
             {
                 throw new FlightException("An unknown error occured while migrating the database", ex);
             }
-            finally
+        }
+
+        private ICollection<IScript> CreateChangeSet(IEnumerable<AuditLogEntry> auditLogEntries)
+        {
+            var entriesLookup = auditLogEntries
+                .OrderByDescending(e => e.Applied)
+                .ToLookup(e => e.ScriptName, StringComparer.OrdinalIgnoreCase);
+
+            var changeSet = new List<IScript>();
+            foreach (var script in migrationScriptProvider.GetScripts())
             {
-                logger.LogInformation("Migration complete");
+                var entries = entriesLookup[script.ScriptName];
+
+                if (entries?.Any(e => e.Checksum == script.Checksum) == false)
+                {
+                    changeSet.Add(script);
+                }
+                else
+                {
+                    var lastApplied = entries.FirstOrDefault();
+
+                    if (script.Idempotent && script.Checksum != lastApplied.Checksum)
+                    {
+                        changeSet.Add(script);
+                    }
+                }
             }
+
+            return changeSet;
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -24,8 +23,6 @@ namespace Flight.Providers
 
         public override IEnumerable<IScript> GetScripts()
         {
-            Logger.LogDebug($"Search settings: recusive={Recursive}, filter={Filter}");
-
             var scripts = new List<FileSystemScript>();
 
             var paths = locations.Select(Path.GetFullPath);
@@ -34,7 +31,6 @@ namespace Flight.Providers
             {
                 if (!Directory.Exists(path))
                 {
-                    Logger.LogWarning($"Location does not exist: {path}");
                     continue;
                 }
 
