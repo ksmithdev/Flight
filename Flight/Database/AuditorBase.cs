@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Data.Common;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -27,5 +28,39 @@
         }
 
         public abstract Task StoreEntryAsync(DbConnection connection, DbTransaction? transaction, IScript script, CancellationToken cancellationToken = default);
+
+        public virtual async Task<IEnumerable<IScript>> CreateChangeSetAsync(DbConnection connection, IEnumerable<IScript> scripts, CancellationToken cancellationToken = default)
+        {
+            if (scripts == null)
+                throw new ArgumentNullException(nameof(scripts));
+
+            var auditLogEntries = await LoadEntriesAsync(connection, cancellationToken).ConfigureAwait(false);
+
+            var entriesLookup = auditLogEntries
+                .OrderByDescending(e => e.Applied)
+                .ToLookup(e => e.ScriptName, StringComparer.OrdinalIgnoreCase);
+
+            var changeSet = new List<IScript>();
+            foreach (var script in scripts)
+            {
+                var entries = entriesLookup[script.ScriptName];
+
+                if (entries?.Any(e => e.Checksum == script.Checksum) == false)
+                {
+                    changeSet.Add(script);
+                }
+                else
+                {
+                    var lastApplied = entries.FirstOrDefault();
+
+                    if (script.Idempotent && script.Checksum != lastApplied.Checksum)
+                    {
+                        changeSet.Add(script);
+                    }
+                }
+            }
+
+            return changeSet;
+        }
     }
 }

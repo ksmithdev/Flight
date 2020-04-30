@@ -20,9 +20,9 @@
 
         public static void Error(Exception exception, string message) => Logger.LogError(exception, message);
 
-        public static void Info(string message) => Logger.LogInformation(message);
+        public static void Info(string info) => Logger.LogInformation(info);
 
-        public static void Info(Exception exception, string message) => Logger.LogInformation(exception, message);
+        public static void Info(Exception exception, string info) => Logger.LogInformation(exception, info);
 
         public static void SetLogger(ILogger logger) => Logger = logger ?? NullLogger.Instance;
 

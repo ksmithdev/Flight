@@ -1,37 +1,41 @@
 ﻿namespace Flight
 {
     using Flight.Database;
-    using Flight.Executors;
     using Flight.Logging;
     using Flight.Providers;
+    using Flight.Stages;
     using Microsoft.Extensions.Logging;
     using System;
+    using System.Collections.Generic;
 
     public class MigrationBuilder
     {
-        private readonly CompositeScriptProvider migrationScriptProvider;
-        private readonly CompositeScriptProvider preMigrationScriptProvier;
         private IAuditor? auditLog;
         private IBatchManager? batchManager;
         private IConnectionFactory? connectionFactory;
-        private IScriptExecutor? scriptExecutor;
+        private IScriptProvider initializationScriptProvider = NullScriptProvider.Instance;
+        private readonly ICollection<IStage> migrationStages;
 
         public MigrationBuilder()
         {
-            preMigrationScriptProvier = new CompositeScriptProvider();
-            migrationScriptProvider = new CompositeScriptProvider();
+            migrationStages = new List<IStage>();
         }
 
-        public MigrationBuilder AddMigrationScripts(IScriptProvider scriptProvider)
+        public MigrationBuilder AddMigrationStage(IStage stage)
         {
-            migrationScriptProvider.AddScriptProvider(scriptProvider);
-
+            migrationStages.Add(stage);
             return this;
         }
 
-        public MigrationBuilder AddPreMigrationScripts(IScriptProvider scriptProvider)
+        public MigrationBuilder RemoveMigrationStage(IStage stage)
         {
-            preMigrationScriptProvier.AddScriptProvider(scriptProvider);
+            migrationStages.Remove(stage);
+            return this;
+        }
+
+        public MigrationBuilder AddInitializationScripts(IScriptProvider scriptProvider)
+        {
+            this.initializationScriptProvider = scriptProvider;
 
             return this;
         }
@@ -44,18 +48,19 @@
                 throw new InvalidOperationException("cannot build migration without setting batch manager");
             if (auditLog == null)
                 throw new InvalidOperationException("cannot build migration without setting audit log");
-            if (scriptExecutor == null)
-                throw new InvalidOperationException("cannot build migration without setting script executor");
 
             Log.SetLogger(loggerFactory.CreateLogger(typeof(Migration)));
 
+            var migrationStages = new List<IStage>();
+            migrationStages.Add(new InitializationStage(initializationScriptProvider));
+            foreach (var migrationStage in this.migrationStages)
+                migrationStages.Add(migrationStage);
+
             return new Migration(
                 connectionFactory,
-                scriptExecutor,
                 auditLog,
                 batchManager,
-                preMigrationScriptProvier,
-                migrationScriptProvider);
+                migrationStages);
         }
 
         public void SetAuditLog(IAuditor auditLog) => this.auditLog = auditLog ?? throw new ArgumentNullException(nameof(auditLog));
@@ -63,28 +68,5 @@
         public void SetBatchManager(IBatchManager batchManager) => this.batchManager = batchManager ?? throw new ArgumentNullException(nameof(batchManager));
 
         public void SetConnectionFactory(IConnectionFactory connectionFactory) => this.connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
-
-        public void SetScriptExecutor(IScriptExecutor scriptExecutor) => this.scriptExecutor = scriptExecutor ?? throw new ArgumentNullException(nameof(scriptExecutor));
-
-        public MigrationBuilder UseNoTransaction()
-        {
-            SetScriptExecutor(new NoTransactionExecutor());
-
-            return this;
-        }
-
-        public MigrationBuilder UseOneTransaction()
-        {
-            SetScriptExecutor(new TransactionExecutor());
-
-            return this;
-        }
-
-        public MigrationBuilder UseTransactionPerScript()
-        {
-            SetScriptExecutor(new TransactionPerScriptExecutor());
-
-            return this;
-        }
     }
 }

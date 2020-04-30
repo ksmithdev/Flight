@@ -1,38 +1,19 @@
-﻿namespace Flight
+namespace Flight
 {
-    using Flight.Executors;
     using System;
+    using Flight.Providers;
+    using Flight.Stages;
 
     public static class MigrationBuilderExtensions
     {
-        public static MigrationBuilder UseNoTransaction(this MigrationBuilder migrationBuilder)
+        public static MigrationBuilder AddStageInTransaction(this MigrationBuilder migrationBuilder, IScriptProvider scriptProvider)
         {
             if (migrationBuilder == null)
                 throw new ArgumentNullException(nameof(migrationBuilder));
 
-            migrationBuilder.SetScriptExecutor(new NoTransactionExecutor());
-
-            return migrationBuilder;
-        }
-
-        public static MigrationBuilder UseOneTransaction(this MigrationBuilder migrationBuilder)
-        {
-            if (migrationBuilder == null)
-                throw new ArgumentNullException(nameof(migrationBuilder));
-
-            migrationBuilder.SetScriptExecutor(new TransactionExecutor());
-
-            return migrationBuilder;
-        }
-
-        public static MigrationBuilder UseTransactionPerScript(this MigrationBuilder migrationBuilder)
-        {
-            if (migrationBuilder == null)
-                throw new ArgumentNullException(nameof(migrationBuilder));
-
-            migrationBuilder.SetScriptExecutor(new TransactionPerScriptExecutor());
-
-            return migrationBuilder;
+            return migrationBuilder.AddMigrationStage(
+                new TransactionStage(scriptProvider)
+            );
         }
     }
 }

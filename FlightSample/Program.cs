@@ -1,5 +1,6 @@
 ﻿using Flight;
 using Flight.Providers;
+using Flight.Stages;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
@@ -31,14 +32,13 @@ namespace FlightSample
             // build a migration
             var migration = new MigrationBuilder()
                 .UseSqlServer(@"(LocalDB)\MSSQLLocalDB", database: "MigrationTest", auditSchema: "Flight", auditTable: "ChangeSets")
-                .UseOneTransaction()
 #if DEBUG
-                .AddPreMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Initialization" }))
-                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Migrations" }) { Recursive = true, Sorted = true })
+                .AddInitializationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Initialization" }))
+                .AddMigrationStage(new TransactionStage(new FileSystemScriptProvider(new[] { @"SqlServer\Migrations" }) { Recursive = true, Sorted = true }))
 #else
-                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Migrations" }) { Sorted = true })
+                .AddMigrationStage(new TransactionStage(new FileSystemScriptProvider(new[] { @"SqlServer\Migrations" }) { Sorted = true }))
 #endif
-                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Views" }) { Idempotent = true })
+                .AddMigrationStage(new TransactionStage(new FileSystemScriptProvider(new[] { @"SqlServer\Views" }) { Idempotent = true }))
                 .Build(loggerFactory);
 
             // begin the migration
@@ -46,14 +46,13 @@ namespace FlightSample
 
             var sqliteMigration = new MigrationBuilder()
                 .UseSqlite("Data Source=:memory:;", auditTable: "changesets")
-                .UseOneTransaction()
 #if DEBUG
-                .AddPreMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Initialization" }))
-                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" }) { Recursive = true, Sorted = true })
+                .AddInitializationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Initialization" }))
+                .AddMigrationStage(new TransactionStage(new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" }) { Recursive = true, Sorted = true }))
 #else
-                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" }) { Sorted = true })
+                .AddMigrationStage(new TransactionStage(new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" }) { Sorted = true }))
 #endif
-                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Views" }) { Idempotent = true })
+                .AddMigrationStage(new TransactionStage(new FileSystemScriptProvider(new[] { @"Sqlite\Views" }) { Idempotent = true }))
                 .Build(loggerFactory);
 
             await sqliteMigration.MigrateAsync();
