@@ -1,6 +1,7 @@
 ﻿namespace Flight.Executors
 {
     using Flight.Database;
+    using Flight.Logging;
     using System.Collections.Generic;
     using System.Data.Common;
     using System.Threading;
@@ -12,6 +13,9 @@
         {
             foreach (var script in scripts)
             {
+                Log.Info($"Executing migration script {script.ScriptName}, Checksum: {script.Checksum}");
+                Log.Debug(script.Text);
+
                 foreach (var commandText in batchManager.Split(script))
                 {
                     if (string.IsNullOrWhiteSpace(commandText))

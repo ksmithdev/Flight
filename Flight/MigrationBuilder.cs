@@ -10,7 +10,7 @@
     public class MigrationBuilder
     {
         private readonly CompositeScriptProvider migrationScriptProvider;
-        private readonly CompositeScriptProvider preMigrationScriptProvier;
+        private readonly CompositeScriptProvider initializationScriptProvider;
         private IAuditor? auditLog;
         private IBatchManager? batchManager;
         private IConnectionFactory? connectionFactory;
@@ -18,7 +18,7 @@
 
         public MigrationBuilder()
         {
-            preMigrationScriptProvier = new CompositeScriptProvider();
+            initializationScriptProvider = new CompositeScriptProvider();
             migrationScriptProvider = new CompositeScriptProvider();
         }
 
@@ -29,9 +29,9 @@
             return this;
         }
 
-        public MigrationBuilder AddPreMigrationScripts(IScriptProvider scriptProvider)
+        public MigrationBuilder AddInitializationScripts(IScriptProvider scriptProvider)
         {
-            preMigrationScriptProvier.AddScriptProvider(scriptProvider);
+            initializationScriptProvider.AddScriptProvider(scriptProvider);
 
             return this;
         }
@@ -54,7 +54,7 @@
                 scriptExecutor,
                 auditLog,
                 batchManager,
-                preMigrationScriptProvier,
+                initializationScriptProvider,
                 migrationScriptProvider);
         }
 

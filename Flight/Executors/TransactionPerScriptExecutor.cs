@@ -1,6 +1,7 @@
 ﻿namespace Flight.Executors
 {
     using Flight.Database;
+    using Flight.Logging;
     using System;
     using System.Collections.Generic;
     using System.Data.Common;
@@ -13,6 +14,9 @@
         {
             foreach (var script in scripts)
             {
+                Log.Info($"Executing migration script {script.ScriptName}, Checksum: {script.Checksum}");
+                Log.Debug(script.Text);
+
                 using var transaction = connection.BeginTransaction();
                 try
                 {

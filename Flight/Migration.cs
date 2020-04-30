@@ -16,16 +16,16 @@
         private readonly IBatchManager batchManager;
         private readonly IConnectionFactory connectionFactory;
         private readonly IScriptProvider migrationScriptProvider;
-        private readonly IScriptProvider preMigrationScriptProvider;
+        private readonly IScriptProvider initializationScriptProvider;
         private readonly IScriptExecutor scriptExecutor;
 
-        internal Migration(IConnectionFactory connectionFactory, IScriptExecutor scriptExecutor, IAuditor auditLog, IBatchManager batchManager, IScriptProvider preMigrationScriptProvider, IScriptProvider migrationScriptProvider)
+        internal Migration(IConnectionFactory connectionFactory, IScriptExecutor scriptExecutor, IAuditor auditLog, IBatchManager batchManager, IScriptProvider initializationScriptProvider, IScriptProvider migrationScriptProvider)
         {
             this.connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
             this.scriptExecutor = scriptExecutor ?? throw new ArgumentNullException(nameof(scriptExecutor));
             this.auditLog = auditLog ?? throw new ArgumentNullException(nameof(auditLog));
             this.batchManager = batchManager ?? throw new ArgumentNullException(nameof(batchManager));
-            this.preMigrationScriptProvider = preMigrationScriptProvider ?? throw new ArgumentNullException(nameof(preMigrationScriptProvider));
+            this.initializationScriptProvider = initializationScriptProvider ?? throw new ArgumentNullException(nameof(initializationScriptProvider));
             this.migrationScriptProvider = migrationScriptProvider ?? throw new ArgumentNullException(nameof(migrationScriptProvider));
         }
 
@@ -38,11 +38,12 @@
                 using var connection = connectionFactory.Create();
                 await connection.OpenAsync().ConfigureAwait(false);
 
-                var initializationScripts = preMigrationScriptProvider.GetScripts();
+                var initializationScripts = initializationScriptProvider.GetScripts();
 
+                Log.Info($"{initializationScripts.Count()} initialization script(s) loaded.");
                 foreach (var script in initializationScripts)
                 {
-                    Log.Info($"Executing pre-migration script {script.ScriptName}, Checksum: {script.Checksum}");
+                    Log.Info($"Executing initialization script {script.ScriptName}, Checksum: {script.Checksum}");
                     Log.Debug(script.Text);
 
                     foreach (var commandText in batchManager.Split(script))
@@ -84,25 +85,41 @@
                 .ToLookup(e => e.ScriptName, StringComparer.OrdinalIgnoreCase);
 
             var changeSet = new List<IScript>();
-            foreach (var script in migrationScriptProvider.GetScripts())
+            var scripts = migrationScriptProvider.GetScripts();
+
+            Log.Info($"{scripts.Count()} migration script(s) loaded.");
+            Log.Info("Generating change set...");
+            foreach (var script in scripts)
             {
                 var entries = entriesLookup[script.ScriptName];
 
-                if (entries?.Any(e => e.Checksum == script.Checksum) == false)
+                if (entries?.Any() == false)
                 {
+                    Log.Debug($"Adding {script.ScriptName} to change set: not applied before");
                     changeSet.Add(script);
                 }
                 else
                 {
                     var lastApplied = entries.FirstOrDefault();
 
-                    if (script.Idempotent && script.Checksum != lastApplied.Checksum)
+                    Log.Trace($"{script.ScriptName} last applied checksum: {lastApplied.Checksum}");
+
+                    if (script.Checksum != lastApplied.Checksum)
                     {
-                        changeSet.Add(script);
+                        if (script.Idempotent)
+                        {
+                            Log.Debug($"Adding {script.ScriptName} to change set: idempotent script changed");
+                            changeSet.Add(script);
+                        }
+                        else
+                        {
+                            Log.Warn($"Script {script.ScriptName} has changed but is not marked as idempotent");
+                        }
                     }
                 }
             }
 
+            Log.Info($"Change set created with {changeSet.Count} scripts.");
             return changeSet;
         }
     }

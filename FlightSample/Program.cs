@@ -33,7 +33,7 @@ namespace FlightSample
                 .UseSqlServer(@"(LocalDB)\MSSQLLocalDB", database: "MigrationTest", auditSchema: "Flight", auditTable: "ChangeSets")
                 .UseOneTransaction()
 #if DEBUG
-                .AddPreMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Initialization" }))
+                .AddInitializationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Initialization" }))
                 .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Migrations" }) { Recursive = true, Sorted = true })
 #else
                 .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Migrations" }) { Sorted = true })
@@ -48,7 +48,7 @@ namespace FlightSample
                 .UseSqlite("Data Source=:memory:;", auditTable: "changesets")
                 .UseOneTransaction()
 #if DEBUG
-                .AddPreMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Initialization" }))
+                .AddInitializationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Initialization" }))
                 .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" }) { Recursive = true, Sorted = true })
 #else
                 .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" }) { Sorted = true })
