@@ -15,18 +15,20 @@ namespace FlightSample
         {
             Console.WriteLine("Welcome to the Flight Sample App!");
 
+            // load any application specific configuration
             var configurationBuilder = new ConfigurationBuilder()
                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("FLIGHT_ENVIRONMENT") ?? "Debug"}.json", optional: true, reloadOnChange: true);
-
             Configuration = configurationBuilder.Build();
 
+            // generate a logger factory
             using var loggerFactory = LoggerFactory.Create(b =>
             {
                 b.AddConsole();
                 b.SetMinimumLevel(LogLevel.Trace);
             });
 
+            // build a migration
             var migration = new MigrationBuilder()
                 .UseSqlServer(@"(LocalDB)\MSSQLLocalDB", database: "MigrationTest", auditSchema: "Flight", auditTable: "ChangeSets")
                 .UseOneTransaction()
@@ -39,6 +41,7 @@ namespace FlightSample
                 .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Views" }) { Idempotent = true })
                 .Build(loggerFactory);
 
+            // begin the migration
             await migration.MigrateAsync();
 
             var sqliteMigration = new MigrationBuilder()

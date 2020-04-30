@@ -1,8 +1,8 @@
-﻿using System;
-
-namespace Flight.Database
+﻿namespace Flight.Database
 {
-    public class AuditLogEntry
+    using System;
+
+    public class AuditEntry
     {
         public DateTimeOffset Applied { get; set; }
 

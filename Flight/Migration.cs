@@ -1,24 +1,25 @@
-﻿using Flight.Database;
-using Flight.Executors;
-using Flight.Providers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Flight
+﻿namespace Flight
 {
+    using Flight.Database;
+    using Flight.Executors;
+    using Flight.Logging;
+    using Flight.Providers;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     public class Migration : IMigration
     {
-        private readonly IAuditLog auditLog;
+        private readonly IAuditor auditLog;
         private readonly IBatchManager batchManager;
         private readonly IConnectionFactory connectionFactory;
-        private readonly IScriptProvider preMigrationScriptProvider;
         private readonly IScriptProvider migrationScriptProvider;
+        private readonly IScriptProvider preMigrationScriptProvider;
         private readonly IScriptExecutor scriptExecutor;
 
-        public Migration(IConnectionFactory connectionFactory, IScriptExecutor scriptExecutor, IAuditLog auditLog, IBatchManager batchManager, IScriptProvider preMigrationScriptProvider, IScriptProvider migrationScriptProvider)
+        internal Migration(IConnectionFactory connectionFactory, IScriptExecutor scriptExecutor, IAuditor auditLog, IBatchManager batchManager, IScriptProvider preMigrationScriptProvider, IScriptProvider migrationScriptProvider)
         {
             this.connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
             this.scriptExecutor = scriptExecutor ?? throw new ArgumentNullException(nameof(scriptExecutor));
@@ -30,14 +31,20 @@ namespace Flight
 
         public async Task MigrateAsync(CancellationToken cancellationToken = default)
         {
+            Log.Info("Migration started");
+
             try
             {
                 using var connection = connectionFactory.Create();
                 await connection.OpenAsync().ConfigureAwait(false);
 
                 var initializationScripts = preMigrationScriptProvider.GetScripts();
+
                 foreach (var script in initializationScripts)
                 {
+                    Log.Info($"Executing pre-migration script {script.ScriptName}, Checksum: {script.Checksum}");
+                    Log.Debug(script.Text);
+
                     foreach (var commandText in batchManager.Split(script))
                     {
                         using var command = connection.CreateCommand();
@@ -62,11 +69,15 @@ namespace Flight
             }
             catch (Exception ex)
             {
-                throw new FlightException("An unknown error occured while migrating the database", ex);
+                const string UnknownError = "An unknown error occured while migrating the database";
+                Log.Error(ex, UnknownError);
+                throw new FlightException(UnknownError, ex);
             }
+
+            Log.Info("Migration completed");
         }
 
-        private ICollection<IScript> CreateChangeSet(IEnumerable<AuditLogEntry> auditLogEntries)
+        private ICollection<IScript> CreateChangeSet(IEnumerable<AuditEntry> auditLogEntries)
         {
             var entriesLookup = auditLogEntries
                 .OrderByDescending(e => e.Applied)

@@ -1,18 +1,18 @@
-﻿using Flight.Database;
-using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Flight
+﻿namespace Flight
 {
-    internal class SqliteAuditLog : AuditLogBase
+    using Flight.Database;
+    using System;
+    using System.Collections.Generic;
+    using System.Data.Common;
+    using System.Globalization;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    internal class SqliteAuditor : AuditorBase
     {
         private readonly string auditTable;
 
-        public SqliteAuditLog(string auditTable)
+        public SqliteAuditor(string auditTable)
         {
             // TODO: check auditTable for invalid characters and throw exception to prevent a possible sql injection attack
             this.auditTable = auditTable ?? throw new ArgumentNullException(nameof(auditTable));
@@ -41,9 +41,9 @@ namespace Flight
             }
         }
 
-        public override async Task<IEnumerable<AuditLogEntry>> LoadEntriesAsync(DbConnection connection, CancellationToken cancellationToken)
+        public override async Task<IEnumerable<AuditEntry>> LoadEntriesAsync(DbConnection connection, CancellationToken cancellationToken)
         {
-            var auditEntries = new List<AuditLogEntry>();
+            var auditEntries = new List<AuditEntry>();
 
             using var command = connection.CreateCommand();
             command.CommandText = $@"SELECT script_name, checksum, idempotent, applied, applied_by FROM ""{auditTable}""";
@@ -51,7 +51,7 @@ namespace Flight
             using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
             while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
-                auditEntries.Add(new AuditLogEntry
+                auditEntries.Add(new AuditEntry
                 {
                     ScriptName = reader.GetString(0),
                     Checksum = reader.GetString(1),

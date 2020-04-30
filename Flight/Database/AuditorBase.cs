@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Flight.Database
+﻿namespace Flight.Database
 {
-    public abstract class AuditLogBase : IAuditLog
+    using System;
+    using System.Collections.Generic;
+    using System.Data.Common;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    public abstract class AuditorBase : IAuditor
     {
         public abstract Task EnsureCreatedAsync(DbConnection connection, CancellationToken cancellationToken = default);
 
-        public abstract Task<IEnumerable<AuditLogEntry>> LoadEntriesAsync(DbConnection connection, CancellationToken cancellationToken);
+        public abstract Task<IEnumerable<AuditEntry>> LoadEntriesAsync(DbConnection connection, CancellationToken cancellationToken = default);
 
         public virtual async Task StoreEntriesAsync(DbConnection connection, DbTransaction? transaction, IEnumerable<IScript> scripts, CancellationToken cancellationToken = default)
         {

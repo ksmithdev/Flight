@@ -1,7 +1,7 @@
-﻿using System.Data.Common;
-
-namespace Flight.Database
+﻿namespace Flight.Database
 {
+    using System.Data.Common;
+
     public interface IConnectionFactory
     {
         DbConnection Create();

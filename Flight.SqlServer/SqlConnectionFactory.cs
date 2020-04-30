@@ -1,10 +1,10 @@
-﻿using Flight.Database;
-using System;
-using System.Data.Common;
-using System.Data.SqlClient;
-
-namespace Flight
+﻿namespace Flight
 {
+    using Flight.Database;
+    using System;
+    using System.Data.Common;
+    using System.Data.SqlClient;
+
     internal class SqlConnectionFactory : IConnectionFactory
     {
         private readonly Func<SqlConnection> connectionFactory;

@@ -1,19 +1,19 @@
-﻿using System.Collections.Generic;
-
-namespace Flight.Providers
+﻿namespace Flight.Providers
 {
+    using System.Collections.Generic;
+
     public class CompositeScriptProvider : ScriptProviderBase
     {
-        private readonly ISet<IScriptProvider> scriptProviders;
+        private readonly ICollection<IScriptProvider> scriptProviders;
 
         public CompositeScriptProvider()
         {
-            scriptProviders = new HashSet<IScriptProvider>();
+            scriptProviders = new List<IScriptProvider>();
         }
 
         public CompositeScriptProvider(params IScriptProvider[] scriptProviders)
         {
-            this.scriptProviders = new HashSet<IScriptProvider>(scriptProviders);
+            this.scriptProviders = new List<IScriptProvider>(scriptProviders);
         }
 
         public void AddScriptProvider(IScriptProvider scriptProvider) => scriptProviders.Add(scriptProvider);

@@ -1,8 +1,8 @@
-﻿using System;
-using System.Text;
-
-namespace Flight.Providers
+﻿namespace Flight.Providers
 {
+    using System;
+    using System.Text;
+
     public abstract class ScriptBase : IScript
     {
         private readonly Lazy<byte[]> bytes;

@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
-namespace Flight.Providers
+﻿namespace Flight.Providers
 {
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+
     public class FileSystemScriptProvider : ScriptProviderBase
     {
         private readonly IEnumerable<string> locations;

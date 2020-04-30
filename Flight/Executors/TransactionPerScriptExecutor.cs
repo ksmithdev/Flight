@@ -1,15 +1,15 @@
-﻿using Flight.Database;
-using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Flight.Executors
+﻿namespace Flight.Executors
 {
+    using Flight.Database;
+    using System;
+    using System.Collections.Generic;
+    using System.Data.Common;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     internal class TransactionPerScriptExecutor : IScriptExecutor
     {
-        public async Task ExecuteAsync(DbConnection connection, IEnumerable<IScript> scripts, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken)
+        public async Task ExecuteAsync(DbConnection connection, IEnumerable<IScript> scripts, IBatchManager batchManager, IAuditor auditLog, CancellationToken cancellationToken)
         {
             foreach (var script in scripts)
             {

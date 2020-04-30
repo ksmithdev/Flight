@@ -1,10 +1,10 @@
-﻿using Flight.Database;
-using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-
-namespace Flight
+﻿namespace Flight
 {
+    using Flight.Database;
+    using System;
+    using System.Collections.Generic;
+    using System.Text.RegularExpressions;
+
     internal class SqlBatchManager : IBatchManager
     {
         public IEnumerable<string> Split(IScript script)

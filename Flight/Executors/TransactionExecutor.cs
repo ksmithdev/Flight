@@ -1,15 +1,15 @@
-﻿using Flight.Database;
-using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Flight.Executors
+﻿namespace Flight.Executors
 {
-    internal class OneTransactionExecutor : IScriptExecutor
+    using Flight.Database;
+    using System;
+    using System.Collections.Generic;
+    using System.Data.Common;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    internal class TransactionExecutor : IScriptExecutor
     {
-        public async Task ExecuteAsync(DbConnection connection, IEnumerable<IScript> scripts, IBatchManager batchManager, IAuditLog auditLog, CancellationToken cancellationToken)
+        public async Task ExecuteAsync(DbConnection connection, IEnumerable<IScript> scripts, IBatchManager batchManager, IAuditor auditLog, CancellationToken cancellationToken)
         {
             using var transaction = connection.BeginTransaction();
             try

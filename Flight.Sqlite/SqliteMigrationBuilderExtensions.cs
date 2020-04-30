@@ -1,8 +1,8 @@
-﻿using Microsoft.Data.Sqlite;
-using System;
-
-namespace Flight
+﻿namespace Flight
 {
+    using Microsoft.Data.Sqlite;
+    using System;
+
     public static class SqliteMigrationBuilderExtensions
     {
         public static MigrationBuilder UseSqlite(this MigrationBuilder migrationBuilder, string connectionString, string auditTable = "changesets")
@@ -12,7 +12,7 @@ namespace Flight
 
             var connectionFactory = new SqliteConnectionFactory(connectionString);
             var batchManager = new SqliteBatchManager();
-            var auditor = new SqliteAuditLog(auditTable);
+            var auditor = new SqliteAuditor(auditTable);
 
             migrationBuilder.SetConnectionFactory(connectionFactory);
             migrationBuilder.SetBatchManager(batchManager);
@@ -28,7 +28,7 @@ namespace Flight
 
             var connectionFactory = new SqliteConnectionFactory(dataSource, sqliteOpenMode);
             var batchManager = new SqliteBatchManager();
-            var auditor = new SqliteAuditLog(auditTable);
+            var auditor = new SqliteAuditor(auditTable);
 
             migrationBuilder.SetConnectionFactory(connectionFactory);
             migrationBuilder.SetBatchManager(batchManager);

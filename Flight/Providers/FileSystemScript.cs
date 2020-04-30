@@ -1,8 +1,8 @@
-﻿using System;
-using System.IO;
-
-namespace Flight.Providers
+﻿namespace Flight.Providers
 {
+    using System;
+    using System.IO;
+
     internal class FileSystemScript : ScriptBase
     {
         private readonly string path;

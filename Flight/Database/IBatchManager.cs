@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-
-namespace Flight.Database
+﻿namespace Flight.Database
 {
+    using System.Collections.Generic;
+
     public interface IBatchManager
     {
         IEnumerable<string> Split(IScript script);

@@ -1,12 +1,12 @@
-﻿using System;
-using System.Runtime.Serialization;
-
-namespace Flight
+﻿namespace Flight
 {
+    using System;
+    using System.Runtime.Serialization;
+
     [Serializable]
     public class FlightException : Exception
     {
-        public FlightException() : base()
+        public FlightException()
         {
         }
 

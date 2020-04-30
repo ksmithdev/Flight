@@ -1,16 +1,17 @@
-﻿using Flight.Database;
-using Flight.Executors;
-using Flight.Providers;
-using Microsoft.Extensions.Logging;
-using System;
-
-namespace Flight
+﻿namespace Flight
 {
+    using Flight.Database;
+    using Flight.Executors;
+    using Flight.Logging;
+    using Flight.Providers;
+    using Microsoft.Extensions.Logging;
+    using System;
+
     public class MigrationBuilder
     {
         private readonly CompositeScriptProvider migrationScriptProvider;
         private readonly CompositeScriptProvider preMigrationScriptProvier;
-        private IAuditLog? auditLog;
+        private IAuditor? auditLog;
         private IBatchManager? batchManager;
         private IConnectionFactory? connectionFactory;
         private IScriptExecutor? scriptExecutor;
@@ -46,6 +47,8 @@ namespace Flight
             if (scriptExecutor == null)
                 throw new InvalidOperationException("cannot build migration without setting script executor");
 
+            Log.SetLogger(loggerFactory.CreateLogger(typeof(Migration)));
+
             return new Migration(
                 connectionFactory,
                 scriptExecutor,
@@ -55,12 +58,33 @@ namespace Flight
                 migrationScriptProvider);
         }
 
-        public void SetAuditLog(IAuditLog auditLog) => this.auditLog = auditLog ?? throw new ArgumentNullException(nameof(auditLog));
+        public void SetAuditLog(IAuditor auditLog) => this.auditLog = auditLog ?? throw new ArgumentNullException(nameof(auditLog));
 
         public void SetBatchManager(IBatchManager batchManager) => this.batchManager = batchManager ?? throw new ArgumentNullException(nameof(batchManager));
 
         public void SetConnectionFactory(IConnectionFactory connectionFactory) => this.connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
 
         public void SetScriptExecutor(IScriptExecutor scriptExecutor) => this.scriptExecutor = scriptExecutor ?? throw new ArgumentNullException(nameof(scriptExecutor));
+
+        public MigrationBuilder UseNoTransaction()
+        {
+            SetScriptExecutor(new NoTransactionExecutor());
+
+            return this;
+        }
+
+        public MigrationBuilder UseOneTransaction()
+        {
+            SetScriptExecutor(new TransactionExecutor());
+
+            return this;
+        }
+
+        public MigrationBuilder UseTransactionPerScript()
+        {
+            SetScriptExecutor(new TransactionPerScriptExecutor());
+
+            return this;
+        }
     }
 }

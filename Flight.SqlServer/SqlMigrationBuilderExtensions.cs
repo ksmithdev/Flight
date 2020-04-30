@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace Flight
+﻿namespace Flight
 {
+    using System;
+
     public static class SqlMigrationBuilderExtensions
     {
         public static MigrationBuilder UseSqlServer(this MigrationBuilder migrationBuilder, string dataSource, string database, string auditSchema = "Flight", string auditTable = "ChangeSets")
@@ -10,7 +10,7 @@ namespace Flight
                 throw new ArgumentNullException(nameof(migrationBuilder));
             var connectionManager = new SqlConnectionFactory(dataSource, database);
             var batchManager = new SqlBatchManager();
-            var auditor = new SqlAuditLog(schemaName: auditSchema, tableName: auditTable);
+            var auditor = new SqlAuditor(schemaName: auditSchema, tableName: auditTable);
 
             migrationBuilder.SetConnectionFactory(connectionManager);
             migrationBuilder.SetBatchManager(batchManager);
@@ -26,7 +26,7 @@ namespace Flight
 
             var connectionManager = new SqlConnectionFactory(connectionString);
             var batchManager = new SqlBatchManager();
-            var auditor = new SqlAuditLog(schemaName: auditSchema, tableName: auditTable);
+            var auditor = new SqlAuditor(schemaName: auditSchema, tableName: auditTable);
 
             migrationBuilder.SetConnectionFactory(connectionManager);
             migrationBuilder.SetBatchManager(batchManager);
@@ -42,7 +42,7 @@ namespace Flight
 
             var connectionFactory = new SqlConnectionFactory(dataSource, database, userId, password);
             var batchManager = new SqlBatchManager();
-            var auditor = new SqlAuditLog(schemaName: auditSchema, tableName: auditTable);
+            var auditor = new SqlAuditor(schemaName: auditSchema, tableName: auditTable);
 
             migrationBuilder.SetConnectionFactory(connectionFactory);
             migrationBuilder.SetBatchManager(batchManager);

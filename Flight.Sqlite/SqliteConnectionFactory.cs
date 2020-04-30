@@ -1,10 +1,10 @@
-﻿using Flight.Database;
-using Microsoft.Data.Sqlite;
-using System;
-using System.Data.Common;
-
-namespace Flight
+﻿namespace Flight
 {
+    using Flight.Database;
+    using Microsoft.Data.Sqlite;
+    using System;
+    using System.Data.Common;
+
     internal class SqliteConnectionFactory : IConnectionFactory
     {
         private readonly Func<SqliteConnection> connectionFactory;

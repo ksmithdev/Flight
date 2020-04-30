@@ -1,11 +1,8 @@
-﻿using System;
-using System.Data.Common;
-using System.Runtime.CompilerServices;
-
-[assembly: InternalsVisibleTo("Flight.Sqlite")]
-[assembly: InternalsVisibleTo("Flight.SqlServer")]
-namespace Flight
+﻿namespace Flight
 {
+    using System;
+    using System.Data.Common;
+
     internal static class DbParameterCollectionExtensions
     {
         public static DbParameter AddParameter(this DbCommand command, string name, object value)

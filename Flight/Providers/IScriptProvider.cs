@@ -1,8 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-
-namespace Flight.Providers
+﻿namespace Flight.Providers
 {
+    using System.Collections.Generic;
+
     public interface IScriptProvider
     {
         IEnumerable<IScript> GetScripts();

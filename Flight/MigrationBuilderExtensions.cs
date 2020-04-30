@@ -1,8 +1,8 @@
-﻿using Flight.Executors;
-using System;
-
-namespace Flight
+﻿namespace Flight
 {
+    using Flight.Executors;
+    using System;
+
     public static class MigrationBuilderExtensions
     {
         public static MigrationBuilder UseNoTransaction(this MigrationBuilder migrationBuilder)
@@ -20,7 +20,7 @@ namespace Flight
             if (migrationBuilder == null)
                 throw new ArgumentNullException(nameof(migrationBuilder));
 
-            migrationBuilder.SetScriptExecutor(new OneTransactionExecutor());
+            migrationBuilder.SetScriptExecutor(new TransactionExecutor());
 
             return migrationBuilder;
         }
