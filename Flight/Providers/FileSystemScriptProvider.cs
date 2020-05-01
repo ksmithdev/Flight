@@ -1,5 +1,6 @@
 ﻿namespace Flight.Providers
 {
+    using Flight.Logging;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
@@ -34,8 +35,12 @@
                     continue;
                 }
 
+                Log.Debug($"Searching for scripts in {path}...");
                 foreach (var filePath in Directory.GetFiles(path, Filter, Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
+                {
+                    Log.Debug($"Found {filePath}");
                     scripts.Add(new FileSystemScript(filePath, Idempotent));
+                }
             }
 
             return Sorted ? scripts.OrderBy(s => s.ScriptName).AsEnumerable() : scripts;

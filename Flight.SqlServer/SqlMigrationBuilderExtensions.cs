@@ -8,13 +8,14 @@
         {
             if (migrationBuilder == null)
                 throw new ArgumentNullException(nameof(migrationBuilder));
+
             var connectionManager = new SqlConnectionFactory(dataSource, database);
             var batchManager = new SqlBatchManager();
             var auditor = new SqlAuditor(schemaName: auditSchema, tableName: auditTable);
 
             migrationBuilder.SetConnectionFactory(connectionManager);
             migrationBuilder.SetBatchManager(batchManager);
-            migrationBuilder.SetAuditLog(auditor);
+            migrationBuilder.SetAuditor(auditor);
 
             return migrationBuilder;
         }
@@ -30,7 +31,7 @@
 
             migrationBuilder.SetConnectionFactory(connectionManager);
             migrationBuilder.SetBatchManager(batchManager);
-            migrationBuilder.SetAuditLog(auditor);
+            migrationBuilder.SetAuditor(auditor);
 
             return migrationBuilder;
         }
@@ -46,7 +47,7 @@
 
             migrationBuilder.SetConnectionFactory(connectionFactory);
             migrationBuilder.SetBatchManager(batchManager);
-            migrationBuilder.SetAuditLog(auditor);
+            migrationBuilder.SetAuditor(auditor);
 
             return migrationBuilder;
         }

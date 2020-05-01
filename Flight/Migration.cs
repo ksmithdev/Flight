@@ -15,8 +15,8 @@
         private readonly IAuditor auditLog;
         private readonly IBatchManager batchManager;
         private readonly IConnectionFactory connectionFactory;
-        private readonly IScriptProvider migrationScriptProvider;
         private readonly IScriptProvider initializationScriptProvider;
+        private readonly IScriptProvider migrationScriptProvider;
         private readonly IScriptExecutor scriptExecutor;
 
         internal Migration(IConnectionFactory connectionFactory, IScriptExecutor scriptExecutor, IAuditor auditLog, IBatchManager batchManager, IScriptProvider initializationScriptProvider, IScriptProvider migrationScriptProvider)
@@ -70,9 +70,9 @@
             }
             catch (Exception ex)
             {
-                const string UnknownError = "An unknown error occured while migrating the database";
-                Log.Error(ex, UnknownError);
-                throw new FlightException(UnknownError, ex);
+                var unknown = FlightExceptionFactory.Unknown(ex);
+                Log.Error(unknown, unknown.Message);
+                throw unknown;
             }
 
             Log.Info("Migration completed");

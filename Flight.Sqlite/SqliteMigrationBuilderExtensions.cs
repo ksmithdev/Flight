@@ -16,7 +16,7 @@
 
             migrationBuilder.SetConnectionFactory(connectionFactory);
             migrationBuilder.SetBatchManager(batchManager);
-            migrationBuilder.SetAuditLog(auditor);
+            migrationBuilder.SetAuditor(auditor);
 
             return migrationBuilder;
         }
@@ -32,7 +32,7 @@
 
             migrationBuilder.SetConnectionFactory(connectionFactory);
             migrationBuilder.SetBatchManager(batchManager);
-            migrationBuilder.SetAuditLog(auditor);
+            migrationBuilder.SetAuditor(auditor);
 
             return migrationBuilder;
         }

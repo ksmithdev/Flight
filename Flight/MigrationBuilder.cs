@@ -9,9 +9,9 @@
 
     public class MigrationBuilder
     {
-        private readonly CompositeScriptProvider migrationScriptProvider;
         private readonly CompositeScriptProvider initializationScriptProvider;
-        private IAuditor? auditLog;
+        private readonly CompositeScriptProvider migrationScriptProvider;
+        private IAuditor? auditor;
         private IBatchManager? batchManager;
         private IConnectionFactory? connectionFactory;
         private IScriptExecutor? scriptExecutor;
@@ -22,13 +22,6 @@
             migrationScriptProvider = new CompositeScriptProvider();
         }
 
-        public MigrationBuilder AddMigrationScripts(IScriptProvider scriptProvider)
-        {
-            migrationScriptProvider.AddScriptProvider(scriptProvider);
-
-            return this;
-        }
-
         public MigrationBuilder AddInitializationScripts(IScriptProvider scriptProvider)
         {
             initializationScriptProvider.AddScriptProvider(scriptProvider);
@@ -36,29 +29,36 @@
             return this;
         }
 
+        public MigrationBuilder AddMigrationScripts(IScriptProvider scriptProvider)
+        {
+            migrationScriptProvider.AddScriptProvider(scriptProvider);
+
+            return this;
+        }
+
         public IMigration Build(ILoggerFactory loggerFactory)
         {
             if (connectionFactory == null)
-                throw new InvalidOperationException("cannot build migration without setting connection factory");
+                throw FlightExceptionFactory.InvalidOperation("CannotBuildWithoutConnectionFactory");
             if (batchManager == null)
-                throw new InvalidOperationException("cannot build migration without setting batch manager");
-            if (auditLog == null)
-                throw new InvalidOperationException("cannot build migration without setting audit log");
+                throw FlightExceptionFactory.InvalidOperation("CannotBuildWithoutBatchManager");
+            if (auditor == null)
+                throw FlightExceptionFactory.InvalidOperation("CannotBuildWithoutAuditor");
             if (scriptExecutor == null)
-                throw new InvalidOperationException("cannot build migration without setting script executor");
+                throw FlightExceptionFactory.InvalidOperation("CannotBuildWithoutScriptExecutor");
 
             Log.SetLogger(loggerFactory.CreateLogger(typeof(Migration)));
 
             return new Migration(
                 connectionFactory,
                 scriptExecutor,
-                auditLog,
+                auditor,
                 batchManager,
                 initializationScriptProvider,
                 migrationScriptProvider);
         }
 
-        public void SetAuditLog(IAuditor auditLog) => this.auditLog = auditLog ?? throw new ArgumentNullException(nameof(auditLog));
+        public void SetAuditor(IAuditor auditor) => this.auditor = auditor ?? throw new ArgumentNullException(nameof(auditor));
 
         public void SetBatchManager(IBatchManager batchManager) => this.batchManager = batchManager ?? throw new ArgumentNullException(nameof(batchManager));
 

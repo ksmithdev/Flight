@@ -12,10 +12,11 @@
     {
         public async Task ExecuteAsync(DbConnection connection, IEnumerable<IScript> scripts, IBatchManager batchManager, IAuditor auditLog, CancellationToken cancellationToken)
         {
+            Log.Trace($"Begin {nameof(TransactionPerScriptExecutor)}.{nameof(ExecuteAsync)}");
+
             foreach (var script in scripts)
             {
                 Log.Info($"Executing migration script {script.ScriptName}, Checksum: {script.Checksum}");
-                Log.Debug(script.Text);
 
                 using var transaction = connection.BeginTransaction();
                 try
@@ -24,6 +25,8 @@
                     {
                         if (string.IsNullOrWhiteSpace(commandText))
                             continue;
+
+                        Log.Debug(commandText);
 
                         using var command = connection.CreateCommand();
                         command.Transaction = transaction;
@@ -47,6 +50,8 @@
                     throw;
                 }
             }
+
+            Log.Trace($"End {nameof(TransactionPerScriptExecutor)}.{nameof(ExecuteAsync)}");
         }
     }
 }
