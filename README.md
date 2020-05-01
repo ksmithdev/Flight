@@ -7,12 +7,6 @@ by providing a basic explanation of how to do it easily.
 Look how easy it is to use:
 
 ```csharp
-// load any application specific configuration
-var configurationBuilder = new ConfigurationBuilder()
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("FLIGHT_ENVIRONMENT") ?? "Debug"}.json", optional: true, reloadOnChange: true);
-Configuration = configurationBuilder.Build();
-
 // generate a logger factory
 using var loggerFactory = LoggerFactory.Create(b =>
 {
@@ -22,12 +16,16 @@ using var loggerFactory = LoggerFactory.Create(b =>
 
 // build a migration
 var migration = new MigrationBuilder()
+    // set the connection string to the target database
+    // you can also specify the database and table to store the migration information
     .UseSqlServer(@"(LocalDB)\MSSQLLocalDB", database: "MigrationTest", auditSchema: "Flight", auditTable: "ChangeSets")
+    // set the migration strategy
+    // using one transaction will execute all migration scripts inside a transaction and roll them all back if there is a failure
     .UseOneTransaction()
 // you can have multiple migration plans based on configuration
 #if DEBUG
-    // pre-migration scripts are run before the regular migration scripts. the audit log will be verified and created after this process. you can use this to reset a database to a known state for testing.
-    .AddPreMigrationScripts(
+    // initialization scripts are run before the regular migration scripts. the audit log will be verified and created after this process. you can use this to reset a database to a known state for testing. these scripts are not executed inside of a transaction.
+    .AddInitializationScripts(
         new FileSystemScriptProvider(new[] { @"SqlServer\Initialization" }))
     // scripts can be loaded from the file system and executed in a sorted manner based on the file name
     .AddMigrationScripts(
@@ -38,7 +36,7 @@ var migration = new MigrationBuilder()
     .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Migrations" }) {
         Sorted = true })
 #endif
-    // idempotent scripts will be run every time they change
+    // idempotent scripts will be run every time the file changes
     .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Views" }) { 
         Idempotent = true })
     .Build(loggerFactory);
@@ -65,11 +63,6 @@ Contribute
 
 - Issue Tracker: github.com/animusblue/Flight/issues
 - Source Code: github.com/animusblue/Flight
-
-Support
--------
-
-If you are having issues, please let us know.
 
 License
 -------

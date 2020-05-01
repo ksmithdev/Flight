@@ -130,6 +130,6 @@
     <value>Cannot build migration without setting script executor.</value>
   </data>
   <data name="Unknown" xml:space="preserve">
-    <value>An unknown error has occured while processing the migration.</value>
+    <value>An unknown error has occured while running the migration.</value>
   </data>
 </root>
