@@ -9,6 +9,17 @@
     <Authors>Kyle Smith</Authors>
     <Product>Flight Database Migration System</Product>
     <RepositoryType>git</RepositoryType>
+    <Description>Flight is an easy to use framework for applying SQL to a database deterministically. You create a migration plan and Flight will take care of the rest.</Description>
+    <RepositoryUrl>https://github.com/ksmithdev/Flight</RepositoryUrl>
+    <Version>0.1.0-alpha1</Version>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageId>KSmithDev.Flight.Sqlite</PackageId>
+    <PackageTags>flight sql migration database sqlite</PackageTags>
+    <Copyright>© 2020 Kyle Smith</Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
+    <NoWarn>1701;1702;2100</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
