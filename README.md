@@ -5,7 +5,7 @@ Flight is an easy to use framework for applying SQL to a database deterministica
 
 Look how easy it is to use:
 
-```csharp
+~~~csharp
 // generate a logger factory
 using var loggerFactory = LoggerFactory.Create(b =>
 {
@@ -17,7 +17,7 @@ using var loggerFactory = LoggerFactory.Create(b =>
 var migration = new MigrationBuilder()
     // set the connection string to the target database
     .UseSqlServer(@"(LocalDB)\MSSQLLocalDB", database: "MigrationTest")
-    // using one transaction will execute all migration scripts inside a transaction and roll them all back if there is a failure
+    // using one transaction will execute all migration scripts inside a transaction
     .UseOneTransaction()
     // scripts can be loaded from the file system and will be only executed once
     .AddMigrationScripts(
@@ -33,7 +33,7 @@ var migration = new MigrationBuilder()
 
 // begin the migration
 await migration.MigrateAsync();
-```
+~~~
 
 Supported Databases
 --------
@@ -48,7 +48,9 @@ Installation
 
 Install Flight by running:
 
-    dotnet add package Newtonsoft.Json
+~~~powershell
+dotnet add package KSmithDev.Flight
+~~~
 
 Contribute
 ----------
