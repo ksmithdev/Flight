@@ -31,7 +31,7 @@ namespace FlightSample
             // build a migration
             var migration = new MigrationBuilder()
                 .UseSqlServer(@"(LocalDB)\MSSQLLocalDB", database: "MigrationTest", auditSchema: "Flight", auditTable: "ChangeSets")
-                .UseOneTransaction()
+                .UseTransaction()
 #if DEBUG
                 .AddInitializationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Initialization" }))
                 .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Migrations" }) { Recursive = true, Sorted = true })
@@ -46,7 +46,7 @@ namespace FlightSample
 
             var sqliteMigration = new MigrationBuilder()
                 .UseSqlite("Data Source=:memory:;", auditTable: "changesets")
-                .UseOneTransaction()
+                .UseTransaction()
 #if DEBUG
                 .AddInitializationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Initialization" }))
                 .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" }) { Recursive = true, Sorted = true })

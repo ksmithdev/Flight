@@ -3,6 +3,9 @@
     using System;
     using System.Runtime.Serialization;
 
+    /// <summary>
+    /// Represents errors that occur in the Flight framework.
+    /// </summary>
     [Serializable]
     public class FlightException : Exception
     {

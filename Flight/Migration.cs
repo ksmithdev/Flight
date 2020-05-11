@@ -10,6 +10,9 @@
     using System.Threading;
     using System.Threading.Tasks;
 
+    /// <summary>
+    /// <inheritdoc cref="IMigration"/>
+    /// </summary>
     public class Migration : IMigration
     {
         private readonly IAuditor auditLog;
@@ -29,6 +32,11 @@
             this.migrationScriptProvider = migrationScriptProvider ?? throw new ArgumentNullException(nameof(migrationScriptProvider));
         }
 
+        /// <summary>
+        /// <inheritdoc cref="IMigration.MigrateAsync(CancellationToken)"/>
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task MigrateAsync(CancellationToken cancellationToken = default)
         {
             Log.Info("Migration started");
