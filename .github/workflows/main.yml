@@ -68,6 +68,6 @@ jobs:
       - name: Install dependencies
         run: dotnet restore
       - name: Build
-        run: dotnet build --configuration Release --no-restore /p:Version=${{ steps.gitversion.outputs.nuGetPreReleaseTagV2 }}
+        run: dotnet build --configuration Release --no-restore /p:Version=${{ steps.gitversion.outputs.NuGetVersion }}
       - name: Deploy
         run: dotnet nuget push **/*.nupkg -k ${{ secrets.nugetkey }} -s https://api.nuget.org/v3/index.json
