@@ -1,10 +1,10 @@
-﻿using System;
-using System.Globalization;
-using System.Reflection;
-using System.Resources;
-
-namespace Flight
+﻿namespace Flight
 {
+    using System;
+    using System.Globalization;
+    using System.Reflection;
+    using System.Resources;
+
     /// <summary>
     /// Factory methods for generating localized exception messages.
     /// </summary>
