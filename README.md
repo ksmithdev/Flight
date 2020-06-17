@@ -40,7 +40,7 @@ Supported Databases
 
 - [x] SQL Server
 - [x] SQLite
-- [ ] PostgreSQL
+- [x] PostgreSQL
 - [ ] MySQL
 
 Installation
@@ -49,7 +49,12 @@ Installation
 Install Flight by running:
 
 ~~~powershell
-dotnet add package KSmithDev.Flight
+# for MS SQL Server
+dotnet add package KSmithDev.Flight.SqlServer
+# for Sqlite
+dotnet add package KSmithDev.Flight.Sqlite
+# for PostgreSQL
+dotnet add package KSmithDev.Flight.Postgres
 ~~~
 
 Contribute
