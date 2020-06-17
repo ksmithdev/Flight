@@ -24,7 +24,7 @@
         {
             using (var command = connection.CreateCommand())
             {
-                command.CommandText = "SELECT COUNT(1) FROM pg_catalog.pg_tables WHERE schemaname=@schema;";
+                command.CommandText = "SELECT COUNT(1) FROM information_schema.schemata WHERE schema_name = @schema;";
                 command.AddParameter("@schema", schemaName);
 
                 var result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
@@ -33,7 +33,7 @@
                 if (count == 0)
                 {
                     command.Parameters.Clear();
-                    command.CommandText = $"CREATE SCHEMA [{schemaName}];";
+                    command.CommandText = $"CREATE SCHEMA {schemaName};";
                     await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
                 }
             }
@@ -51,7 +51,7 @@
                 if (count == 0)
                 {
                     command.Parameters.Clear();
-                    command.CommandText = $@"CREATE TABLE [{schemaName}].[{tableName}] (
+                    command.CommandText = $@"CREATE TABLE {schemaName}.{tableName} (
     script_name varchar(255) NOT NULL,
     checksum char(44) NOT NULL,
     idempotent bool NOT NULL,
@@ -69,7 +69,7 @@
             var auditEntries = new List<AuditEntry>();
 
             using var command = connection.CreateCommand();
-            command.CommandText = $"SELECT script_name, checksum, idempotent, applied, applied_by FROM [{schemaName}].[{tableName}]";
+            command.CommandText = $"SELECT script_name, checksum, idempotent, applied, applied_by FROM {schemaName}.{tableName}";
 
             using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
             while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
@@ -91,7 +91,7 @@
         {
             using var command = connection.CreateCommand();
             command.Transaction = transaction;
-            command.CommandText = $"INSERT INTO [{schemaName}].[{tableName}] (script_name, checksum, idempotent, applied, applied_by) VALUES (@scriptName, @checksum, @idempotent, now(), current_user())";
+            command.CommandText = $"INSERT INTO {schemaName}.{tableName} (script_name, checksum, idempotent, applied, applied_by) VALUES (@scriptName, @checksum, @idempotent, now(), current_user)";
             command.AddParameter("@scriptName", script.ScriptName);
             command.AddParameter("@checksum", script.Checksum);
             command.AddParameter("@idempotent", script.Idempotent);

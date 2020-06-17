@@ -35,5 +35,21 @@
 
             return migrationBuilder;
         }
+
+        public static MigrationBuilder UsePostgres(this MigrationBuilder migrationBuilder, string host, string database, string username, string password, string auditSchema = "flight", string auditTable = "change_sets")
+        {
+            if (migrationBuilder == null)
+                throw new ArgumentNullException(nameof(migrationBuilder));
+
+            var connectionFactory = new PostgresConnectionFactory(host, database, username, password);
+            var batchManager = new PostgresBatchManager();
+            var auditor = new PostgresAuditor(auditSchema, auditTable);
+
+            migrationBuilder.SetConnectionFactory(connectionFactory);
+            migrationBuilder.SetBatchManager(batchManager);
+            migrationBuilder.SetAuditor(auditor);
+
+            return migrationBuilder;
+        }
     }
 }
