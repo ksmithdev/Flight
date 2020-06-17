@@ -5,7 +5,6 @@
     <RootNamespace>Flight</RootNamespace>
     <Nullable>enable</Nullable>
     <LangVersion>8.0</LangVersion>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Kyle Smith</Authors>
     <Product>Flight Database Migration System</Product>
     <RepositoryType>git</RepositoryType>
