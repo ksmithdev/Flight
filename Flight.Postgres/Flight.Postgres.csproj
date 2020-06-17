@@ -1,7 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <RootNamespace>Flight</RootNamespace>
     <Nullable>enable</Nullable>
     <LangVersion>8.0</LangVersion>
     <Authors>Kyle Smith</Authors>
@@ -11,8 +12,8 @@
     <RepositoryUrl>https://github.com/ksmithdev/Flight</RepositoryUrl>
     <Version>0.1.0-alpha1</Version>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageId>KSmithDev.Flight</PackageId>
-    <PackageTags>flight sql migration database</PackageTags>
+    <PackageId>KSmithDev.Flight.Postgres</PackageId>
+    <PackageTags>flight sql migration database postgresql postgres</PackageTags>
     <Copyright>© 2020 Kyle Smith</Copyright>
   </PropertyGroup>
 
@@ -25,8 +26,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.5" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.5" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.5" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.5" />
+    <PackageReference Include="Npgsql" Version="4.1.3.1" />
     <PackageReference Include="Roslynator.Analyzers" Version="2.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -34,18 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Resources\ExceptionMessages.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ExceptionMessages.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Resources\ExceptionMessages.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>ExceptionMessages.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <ProjectReference Include="..\Flight\Flight.csproj" />
   </ItemGroup>
 
 </Project>
