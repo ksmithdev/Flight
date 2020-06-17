@@ -13,8 +13,8 @@
     <RepositoryUrl>https://github.com/ksmithdev/Flight</RepositoryUrl>
     <Version>0.1.0-alpha1</Version>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageId>KSmithDev.Flight.Sqlite</PackageId>
-    <PackageTags>flight sql migration database sqlite</PackageTags>
+    <PackageId>KSmithDev.Flight.Postgres</PackageId>
+    <PackageTags>flight sql migration database postgresql postgres</PackageTags>
     <Copyright>© 2020 Kyle Smith</Copyright>
   </PropertyGroup>
 

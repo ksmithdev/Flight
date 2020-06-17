@@ -41,9 +41,10 @@ namespace FlightSample
                 .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Views" }) { Idempotent = true })
                 .Build(loggerFactory);
 
-            // begin the migration
+            // execute the migration
             await migration.MigrateAsync();
 
+            // build a migration
             var sqliteMigration = new MigrationBuilder()
                 .UseSqlite("Data Source=:memory:;", auditTable: "changesets")
                 .UseTransaction()
@@ -56,7 +57,24 @@ namespace FlightSample
                 .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Views" }) { Idempotent = true })
                 .Build(loggerFactory);
 
+            // execute the migration
             await sqliteMigration.MigrateAsync();
+
+            // build a migration
+            var postgreMigration = new MigrationBuilder()
+                .UsePostgres(@"127.0.0.1", database: "migration_test", auditSchema: "flight", auditTable: "change_sets")
+                .UseTransaction()
+#if DEBUG
+                .AddInitializationScripts(new FileSystemScriptProvider(new[] { @"Postgres\Initialization" }))
+                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Postgres\Migrations" }) { Recursive = true, Sorted = true })
+#else
+                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Postgres\Migrations" }) { Sorted = true })
+#endif
+                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Postgres\Views" }) { Idempotent = true })
+                .Build(loggerFactory);
+
+            // execute the migration
+            await postgreMigration.MigrateAsync();
         }
     }
 }
