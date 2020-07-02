@@ -16,6 +16,7 @@
     <PackageTags>flight sql migration database sqlite</PackageTags>
     <Copyright>© 2020 Kyle Smith</Copyright>
     <MinVerDefaultPreReleasePhase>preview</MinVerDefaultPreReleasePhase>
+    <MinVerAutoIncrement>minor</MinVerAutoIncrement>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
