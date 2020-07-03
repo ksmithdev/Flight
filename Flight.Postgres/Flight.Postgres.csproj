@@ -3,8 +3,10 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <RootNamespace>Flight</RootNamespace>
+    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <LangVersion>8.0</LangVersion>
+    <Features>strict</Features>
+    <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
     <Authors>Kyle Smith</Authors>
     <Product>Flight Database Migration System</Product>
     <RepositoryType>git</RepositoryType>
@@ -17,6 +19,7 @@
     <Copyright>© 2020 Kyle Smith</Copyright>
     <MinVerDefaultPreReleasePhase>preview</MinVerDefaultPreReleasePhase>
     <MinVerAutoIncrement>minor</MinVerAutoIncrement>
+    <MinVerTagPrefix>v</MinVerTagPrefix>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">

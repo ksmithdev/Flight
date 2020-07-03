@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <LangVersion>8.0</LangVersion>
-    <Authors>Kyle Smith</Authors>
+    <Features>strict</Features>
+    <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
+    <Authors>Kyle Smith</Authors>    
     <Product>Flight Database Migration System</Product>
     <RepositoryType>git</RepositoryType>
     <Description>Flight is an easy to use framework for applying SQL to a database deterministically. You create a migration plan and Flight will take care of the rest.</Description>
@@ -17,6 +18,7 @@
     <MinVerVerbosity>detailed</MinVerVerbosity>
     <MinVerDefaultPreReleasePhase>preview</MinVerDefaultPreReleasePhase>
     <MinVerAutoIncrement>minor</MinVerAutoIncrement>
+    <MinVerTagPrefix>v</MinVerTagPrefix>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
