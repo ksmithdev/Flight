@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlightSample", "FlightSampl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flight.Sqlite", "Flight.Sqlite\Flight.Sqlite.csproj", "{576981C7-51FA-461E-8563-C9D90DA1D2FB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flight.Postgres", "Flight.Postgres\Flight.Postgres.csproj", "{B7B4900F-2169-40AE-A66D-3675BAD956BC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flight.Postgres", "Flight.Postgres\Flight.Postgres.csproj", "{B7B4900F-2169-40AE-A66D-3675BAD956BC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flight.MySql", "Flight.MySql\Flight.MySql.csproj", "{9E78B789-50A2-4A60-803F-90614C4324A3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{B7B4900F-2169-40AE-A66D-3675BAD956BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7B4900F-2169-40AE-A66D-3675BAD956BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7B4900F-2169-40AE-A66D-3675BAD956BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E78B789-50A2-4A60-803F-90614C4324A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E78B789-50A2-4A60-803F-90614C4324A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E78B789-50A2-4A60-803F-90614C4324A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E78B789-50A2-4A60-803F-90614C4324A3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

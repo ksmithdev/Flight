@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Flight.MySql\Flight.MySql.csproj" />
     <ProjectReference Include="..\Flight.Postgres\Flight.Postgres.csproj" />
     <ProjectReference Include="..\Flight.Sqlite\Flight.Sqlite.csproj" />
     <ProjectReference Include="..\Flight.SqlServer\Flight.SqlServer.csproj" />
@@ -37,11 +38,34 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="MySql\Initialization\ResetDatabase.sql" />
+    <None Remove="MySql\Migrations\20190927_Initialize.sql" />
+    <None Remove="MySql\Migrations\20190928_ProjectDescription.sql" />
+    <None Remove="MySql\Migrations\Development\20190927_InitializeDeveloperData.sql" />
+    <None Remove="MySql\Views\View_ProjectManagers.sql" />
+  </ItemGroup>
   
   <ItemGroup>
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TransformOnBuild>true</TransformOnBuild>
+    </Content>
+    <Content Include="MySql\Initialization\ResetDatabase.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MySql\Migrations\20190927_Initialize.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MySql\Migrations\20190928_ProjectDescription.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MySql\Migrations\Development\20190927_InitializeDeveloperData.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MySql\Views\View_ProjectManagers.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Update="appsettings.Debug.json">
       <IsTransformFile>true</IsTransformFile>
