@@ -1,6 +1,7 @@
 ﻿namespace Flight.Providers
 {
     using System.Collections.Generic;
+    using Flight.Logging;
 
     /// <summary>
     /// Defines a composite script provider to group a collection of script providers into a single object.
@@ -37,12 +38,21 @@
         /// <returns></returns>
         public override IEnumerable<IScript> GetScripts()
         {
-            foreach (var scriptProvider in scriptProviders)
+            try
             {
-                foreach (var script in scriptProvider.GetScripts())
+                Log.Trace($"Begin {nameof(CompositeScriptProvider)}.{nameof(GetScripts)}");
+
+                foreach (var scriptProvider in scriptProviders)
                 {
-                    yield return script;
+                    foreach (var script in scriptProvider.GetScripts())
+                    {
+                        yield return script;
+                    }
                 }
+            }
+            finally
+            {
+                Log.Trace($"End {nameof(CompositeScriptProvider)}.{nameof(GetScripts)}");
             }
         }
 

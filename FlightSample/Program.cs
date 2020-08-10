@@ -28,37 +28,37 @@ namespace FlightSample
                 b.SetMinimumLevel(LogLevel.Trace);
             });
 
-            //            // build a migration
-            //            var migration = new MigrationBuilder()
-            //                .UseSqlServer(@"(LocalDB)\MSSQLLocalDB", database: "MigrationTest", auditSchema: "Flight", auditTable: "ChangeSets")
-            //                .UseTransaction()
-            //#if DEBUG
-            //                .AddInitializationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Initialization" }))
-            //                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Migrations" }) { Recursive = true, Sorted = true })
-            //#else
-            //                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Migrations" }) { Sorted = true })
-            //#endif
-            //                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Views" }) { Idempotent = true })
-            //                .Build(loggerFactory);
+            // build a migration
+            var migration = new MigrationBuilder()
+                .UseSqlServer(@"(LocalDB)\MSSQLLocalDB", database: "MigrationTest", auditSchema: "Flight", auditTable: "ChangeSets")
+                .UseTransaction()
+#if DEBUG
+                .AddInitializationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Initialization" }))
+                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Migrations" }) { Recursive = true, Sorted = true })
+#else
+                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Migrations" }) { Sorted = true })
+#endif
+                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"SqlServer\Views" }) { Idempotent = true })
+                .Build(loggerFactory);
 
-            //            // execute the migration
-            //            await migration.MigrateAsync();
+            // execute the migration
+            await migration.MigrateAsync();
 
-            //            // build a migration
-            //            var sqliteMigration = new MigrationBuilder()
-            //                .UseSqlite("Data Source=:memory:;", auditTable: "changesets")
-            //                .UseTransaction()
-            //#if DEBUG
-            //                .AddInitializationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Initialization" }))
-            //                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" }) { Recursive = true, Sorted = true })
-            //#else
-            //                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" }) { Sorted = true })
-            //#endif
-            //                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Views" }) { Idempotent = true })
-            //                .Build(loggerFactory);
+            // build a migration
+            var sqliteMigration = new MigrationBuilder()
+                .UseSqlite("Data Source=:memory:;", auditTable: "changesets")
+                .UseTransaction()
+#if DEBUG
+                .AddInitializationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Initialization" }))
+                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" }) { Recursive = true, Sorted = true })
+#else
+                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" }) { Sorted = true })
+#endif
+                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Views" }) { Idempotent = true })
+                .Build(loggerFactory);
 
-            //            // execute the migration
-            //            await sqliteMigration.MigrateAsync();
+            // execute the migration
+            await sqliteMigration.MigrateAsync();
 
             // build a migration
             var postgreMigration = new MigrationBuilder()
@@ -75,6 +75,22 @@ namespace FlightSample
 
             // execute the migration
             await postgreMigration.MigrateAsync();
+
+            // build a migration
+            var mysqlMigration = new MigrationBuilder()
+                .UseMySql(@"127.0.0.1", database: "MigrationTest", userId: "root", password: "mysql", auditTable: "ChangeSets")
+                .UseTransaction()
+#if DEBUG
+                .AddInitializationScripts(new FileSystemScriptProvider(new[] { @"MySql\Initialization" }))
+                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"MySql\Migrations" }) { Recursive = true, Sorted = true })
+#else
+                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"MySql\Migrations" }) { Sorted = true })
+#endif
+                .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"MySql\Views" }) { Idempotent = true })
+                .Build(loggerFactory);
+
+            // execute the migration
+            await mysqlMigration.MigrateAsync();
         }
     }
 }

@@ -1,0 +1,1 @@
+﻿ALTER TABLE Projects ADD Description VARCHAR(100) NOT NULL DEFAULT '';

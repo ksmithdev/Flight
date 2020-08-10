@@ -43,26 +43,35 @@
         /// <returns></returns>
         public override IEnumerable<IScript> GetScripts()
         {
-            var scripts = new List<FileSystemScript>();
-
-            var paths = locations.Select(Path.GetFullPath);
-
-            foreach (var path in paths.Distinct())
+            try
             {
-                if (!Directory.Exists(path))
+                Log.Trace($"Begin {nameof(FileSystemScriptProvider)}.{nameof(GetScripts)}");
+
+                var scripts = new List<FileSystemScript>();
+
+                var paths = locations.Select(Path.GetFullPath);
+
+                foreach (var path in paths.Distinct())
                 {
-                    continue;
+                    if (!Directory.Exists(path))
+                    {
+                        continue;
+                    }
+
+                    Log.Debug($"Searching for scripts in {path}...");
+                    foreach (var filePath in Directory.GetFiles(path, Filter, Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
+                    {
+                        Log.Debug($"Found {filePath}");
+                        scripts.Add(new FileSystemScript(filePath, Idempotent));
+                    }
                 }
 
-                Log.Debug($"Searching for scripts in {path}...");
-                foreach (var filePath in Directory.GetFiles(path, Filter, Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
-                {
-                    Log.Debug($"Found {filePath}");
-                    scripts.Add(new FileSystemScript(filePath, Idempotent));
-                }
+                return Sorted ? scripts.OrderBy(s => s.ScriptName).AsEnumerable() : scripts;
             }
-
-            return Sorted ? scripts.OrderBy(s => s.ScriptName).AsEnumerable() : scripts;
+            finally
+            {
+                Log.Trace($"End {nameof(FileSystemScriptProvider)}.{nameof(GetScripts)}");
+            }
         }
     }
 }

@@ -9,6 +9,7 @@
 
     internal class NoTransactionExecutor : IScriptExecutor
     {
+        /// <inheritdocs />
         public async Task ExecuteAsync(DbConnection connection, IEnumerable<IScript> scripts, IBatchManager batchManager, IAuditor auditLog, CancellationToken cancellationToken)
         {
             Log.Trace($"Begin {nameof(NoTransactionExecutor)}.{nameof(ExecuteAsync)}");
