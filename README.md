@@ -41,7 +41,7 @@ Supported Databases
 - [x] SQL Server
 - [x] SQLite
 - [x] PostgreSQL
-- [ ] MySQL
+- [x] MySQL
 
 Installation
 ------------
