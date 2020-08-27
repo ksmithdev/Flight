@@ -55,6 +55,8 @@ dotnet add package KSmithDev.Flight.SqlServer
 dotnet add package KSmithDev.Flight.Sqlite
 # for PostgreSQL
 dotnet add package KSmithDev.Flight.Postgres
+# for MySql
+dotnet add package KSmithDev.Flight.MySql
 ~~~
 
 Contribute
