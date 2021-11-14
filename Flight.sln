@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29318.209
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31825.309
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flight", "Flight\Flight.csproj", "{8C3D02DF-BF86-41A9-B75C-332126D3BDB1}"
 EndProject
@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flight.Sqlite", "Flight.Sql
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flight.Postgres", "Flight.Postgres\Flight.Postgres.csproj", "{B7B4900F-2169-40AE-A66D-3675BAD956BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flight.MySql", "Flight.MySql\Flight.MySql.csproj", "{9E78B789-50A2-4A60-803F-90614C4324A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flight.MySql", "Flight.MySql\Flight.MySql.csproj", "{9E78B789-50A2-4A60-803F-90614C4324A3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

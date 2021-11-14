@@ -4,15 +4,15 @@
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Defines a migration plan.
+    /// Represents a migration plan.
     /// </summary>
     public interface IMigration
     {
         /// <summary>
         /// Apply the migration plan to the target database.
         /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="cancellationToken">The token used to notify that operations should be canceled.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         Task MigrateAsync(CancellationToken cancellationToken = default);
     }
 }
