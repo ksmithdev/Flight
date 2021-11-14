@@ -1,1 +1,0 @@
-﻿ALTER TABLE projects ADD description VARCHAR(100) NOT NULL CONSTRAINT DF_Description DEFAULT('');

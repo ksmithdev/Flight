@@ -15,15 +15,15 @@
         /// <summary>
         /// Returns an <see cref="InvalidOperationException"/> with a localized error message.
         /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        internal static Exception InvalidOperation(string name) => new InvalidOperationException(ExceptionMessages.GetString(name, CultureInfo.CurrentCulture));
+        /// <param name="name">The name of the exception message to retrieve.</param>
+        /// <returns>The localized <see cref="InvalidOperationException"/> exception.</returns>
+        internal static InvalidOperationException InvalidOperation(string name) => new (ExceptionMessages.GetString(name, CultureInfo.CurrentCulture));
 
         /// <summary>
         /// Returns a <see cref="FlightException"/> with a localized error message.
         /// </summary>
-        /// <param name="innerException"></param>
-        /// <returns></returns>
-        internal static FlightException Unknown(Exception innerException) => new FlightException(ExceptionMessages.GetString("Unknown", CultureInfo.CurrentCulture), innerException);
+        /// <param name="innerException">The exception that is the cause of the current exception.</param>
+        /// <returns>The localized <see cref="FlightException"/> exception.</returns>
+        internal static FlightException Unknown(Exception innerException) => new (ExceptionMessages.GetString("Unknown", CultureInfo.CurrentCulture), innerException);
     }
 }

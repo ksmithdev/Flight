@@ -4,23 +4,24 @@
     using Flight.Logging;
 
     /// <summary>
-    /// Defines a composite script provider to group a collection of script providers into a single object.
+    /// Represents a composite script provider to group a collection of script providers into a single object.
     /// </summary>
     public class CompositeScriptProvider : ScriptProviderBase
     {
         private readonly ICollection<IScriptProvider> scriptProviders;
 
         /// <summary>
-        /// Creates a new instance of <see cref="CompositeScriptProvider"/>.
+        /// Initializes a new instance of the <see cref="CompositeScriptProvider"/> class.
         /// </summary>
         public CompositeScriptProvider()
         {
-            scriptProviders = new List<IScriptProvider>();
+            this.scriptProviders = new List<IScriptProvider>();
         }
 
         /// <summary>
-        /// Creates a new instance of <see cref="CompositeScriptProvider"/> with the supplied list of providers.
+        /// Initializes a new instance of the <see cref="CompositeScriptProvider"/> class.
         /// </summary>
+        /// <param name="scriptProviders">The collection of script providers.</param>
         public CompositeScriptProvider(params IScriptProvider[] scriptProviders)
         {
             this.scriptProviders = new List<IScriptProvider>(scriptProviders);
@@ -29,20 +30,20 @@
         /// <summary>
         /// Add the supplied provider to the composite collection.
         /// </summary>
-        /// <param name="scriptProvider"></param>
-        public void AddScriptProvider(IScriptProvider scriptProvider) => scriptProviders.Add(scriptProvider);
+        /// <param name="scriptProvider">The script provider to add.</param>
+        public void AddScriptProvider(IScriptProvider scriptProvider) => this.scriptProviders.Add(scriptProvider);
 
         /// <summary>
         /// <inheritdoc cref="IScriptProvider.GetScripts"/>
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The collection of scripts to execute.</returns>
         public override IEnumerable<IScript> GetScripts()
         {
             try
             {
-                Log.Trace($"Begin {nameof(CompositeScriptProvider)}.{nameof(GetScripts)}");
+                Log.Trace($"Begin {nameof(CompositeScriptProvider)}.{nameof(this.GetScripts)}");
 
-                foreach (var scriptProvider in scriptProviders)
+                foreach (var scriptProvider in this.scriptProviders)
                 {
                     foreach (var script in scriptProvider.GetScripts())
                     {
@@ -52,15 +53,15 @@
             }
             finally
             {
-                Log.Trace($"End {nameof(CompositeScriptProvider)}.{nameof(GetScripts)}");
+                Log.Trace($"End {nameof(CompositeScriptProvider)}.{nameof(this.GetScripts)}");
             }
         }
 
         /// <summary>
         /// Remove the supplied provier from the composite collection.
         /// </summary>
-        /// <param name="scriptProvider"></param>
-        /// <returns></returns>
-        public bool RemoveScriptProvider(IScriptProvider scriptProvider) => scriptProviders.Remove(scriptProvider);
+        /// <param name="scriptProvider">The script provider to remove.</param>
+        /// <returns>Whether the script provider was removed.</returns>
+        public bool RemoveScriptProvider(IScriptProvider scriptProvider) => this.scriptProviders.Remove(scriptProvider);
     }
 }

@@ -1,14 +1,14 @@
 ﻿namespace Flight
 {
-    using Flight.Database;
-    using Flight.Executors;
-    using Flight.Logging;
-    using Flight.Providers;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using Flight.Database;
+    using Flight.Executors;
+    using Flight.Logging;
+    using Flight.Providers;
 
     /// <summary>
     /// <inheritdoc cref="IMigration"/>
@@ -22,6 +22,15 @@
         private readonly IScriptProvider migrationScriptProvider;
         private readonly IScriptExecutor scriptExecutor;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Migration"/> class.
+        /// </summary>
+        /// <param name="connectionFactory">The connection factory.</param>
+        /// <param name="scriptExecutor">The script executor.</param>
+        /// <param name="auditLog">The audit log.</param>
+        /// <param name="batchManager">The script batch manager.</param>
+        /// <param name="initializationScriptProvider">The script provider for scripts to run when initializing the database.</param>
+        /// <param name="migrationScriptProvider">The script provider for scripts to run during migrations.</param>
         internal Migration(IConnectionFactory connectionFactory, IScriptExecutor scriptExecutor, IAuditor auditLog, IBatchManager batchManager, IScriptProvider initializationScriptProvider, IScriptProvider migrationScriptProvider)
         {
             this.connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
@@ -35,18 +44,18 @@
         /// <summary>
         /// <inheritdoc cref="IMigration.MigrateAsync(CancellationToken)"/>
         /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="cancellationToken">The token used to notify that operations should be canceled.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         public async Task MigrateAsync(CancellationToken cancellationToken = default)
         {
             Log.Info("Migration started");
 
             try
             {
-                using var connection = connectionFactory.Create();
-                await connection.OpenAsync().ConfigureAwait(false);
+                using var connection = this.connectionFactory.Create();
+                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-                var initializationScripts = initializationScriptProvider.GetScripts();
+                var initializationScripts = this.initializationScriptProvider.GetScripts();
 
                 Log.Info($"{initializationScripts.Count()} initialization script(s) loaded.");
                 foreach (var script in initializationScripts)
@@ -54,7 +63,7 @@
                     Log.Info($"Executing initialization script {script.ScriptName}, Checksum: {script.Checksum}");
                     Log.Debug(script.Text);
 
-                    foreach (var commandText in batchManager.Split(script))
+                    foreach (var commandText in this.batchManager.Split(script))
                     {
                         using var command = connection.CreateCommand();
                         command.CommandText = commandText;
@@ -63,14 +72,17 @@
                         await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
                     }
                 }
-                await auditLog.EnsureCreatedAsync(connection, cancellationToken).ConfigureAwait(false);
-                await auditLog.StoreEntriesAsync(connection, null, initializationScripts, cancellationToken).ConfigureAwait(false);
 
-                var auditLogEntries = await auditLog.LoadEntriesAsync(connection, cancellationToken).ConfigureAwait(false);
+                await this.auditLog.EnsureCreatedAsync(connection, cancellationToken).ConfigureAwait(false);
+                await this.auditLog.StoreEntriesAsync(connection, null, initializationScripts, cancellationToken).ConfigureAwait(false);
 
-                var changeSet = CreateChangeSet(auditLogEntries);
+                var auditLogEntries = await this.auditLog.LoadEntriesAsync(connection, cancellationToken).ConfigureAwait(false);
+
+                var changeSet = this.CreateChangeSet(auditLogEntries);
                 if (changeSet.Count > 0)
-                    await scriptExecutor.ExecuteAsync(connection, changeSet, batchManager, auditLog, cancellationToken).ConfigureAwait(false);
+                {
+                    await this.scriptExecutor.ExecuteAsync(connection, changeSet, this.batchManager, this.auditLog, cancellationToken).ConfigureAwait(false);
+                }
             }
             catch (FlightException)
             {
@@ -93,7 +105,7 @@
                 .ToLookup(e => e.ScriptName, StringComparer.OrdinalIgnoreCase);
 
             var changeSet = new List<IScript>();
-            var scripts = migrationScriptProvider.GetScripts();
+            var scripts = this.migrationScriptProvider.GetScripts();
 
             Log.Info($"{scripts.Count()} migration script(s) loaded.");
             Log.Info("Generating change set...");
