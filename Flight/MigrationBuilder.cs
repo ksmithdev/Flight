@@ -1,147 +1,146 @@
-﻿namespace Flight
+﻿namespace Flight;
+
+using System;
+using Flight.Database;
+using Flight.Executors;
+using Flight.Logging;
+using Flight.Providers;
+using Microsoft.Extensions.Logging;
+
+/// <summary>
+/// Represents a migration using the builder pattern.
+/// </summary>
+public class MigrationBuilder
 {
-    using System;
-    using Flight.Database;
-    using Flight.Executors;
-    using Flight.Logging;
-    using Flight.Providers;
-    using Microsoft.Extensions.Logging;
+    private readonly CompositeScriptProvider initializationScriptProvider;
+    private readonly CompositeScriptProvider migrationScriptProvider;
+    private IAuditor? auditor;
+    private IBatchManager? batchManager = new NullBatchManager();
+    private IConnectionFactory? connectionFactory;
+    private IScriptExecutor? scriptExecutor;
 
     /// <summary>
-    /// Represents a migration using the builder pattern.
+    /// Initializes a new instance of the <see cref="MigrationBuilder"/> class.
     /// </summary>
-    public class MigrationBuilder
+    public MigrationBuilder()
     {
-        private readonly CompositeScriptProvider initializationScriptProvider;
-        private readonly CompositeScriptProvider migrationScriptProvider;
-        private IAuditor? auditor;
-        private IBatchManager? batchManager = new NullBatchManager();
-        private IConnectionFactory? connectionFactory;
-        private IScriptExecutor? scriptExecutor;
+        this.initializationScriptProvider = new CompositeScriptProvider();
+        this.migrationScriptProvider = new CompositeScriptProvider();
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MigrationBuilder"/> class.
-        /// </summary>
-        public MigrationBuilder()
+    /// <summary>
+    /// Add initialization scripts. Initialization scripts are executed prior to ensuring audit table exists and are best used for development and resetting databases to a known state.
+    /// </summary>
+    /// <remarks>Initialization scripts are not executed in a transaction.</remarks>
+    /// <param name="scriptProvider">The provider for initialization scripts.</param>
+    /// <returns>The migration builder instance.</returns>
+    public MigrationBuilder AddInitializationScripts(IScriptProvider scriptProvider)
+    {
+        this.initializationScriptProvider.AddScriptProvider(scriptProvider);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Add scripts to the migration plan. Batches of migration scripts are executed in order they are added to the plan.
+    /// </summary>
+    /// <param name="scriptProvider">The provider for migration scripts.</param>
+    /// <returns>The migration builder instance.</returns>
+    public MigrationBuilder AddMigrationScripts(IScriptProvider scriptProvider)
+    {
+        this.migrationScriptProvider.AddScriptProvider(scriptProvider);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Build the migration plan.
+    /// </summary>
+    /// <param name="loggerFactory">The factory for creating <see cref="ILogger"/> instances.</param>
+    /// <exception cref="InvalidOperationException">Thrown when a required resource was not specified.</exception>
+    /// <returns>A <see cref="Migration">Migration Plan</see>.</returns>
+    public IMigration Build(ILoggerFactory loggerFactory)
+    {
+        if (this.connectionFactory == null)
         {
-            this.initializationScriptProvider = new CompositeScriptProvider();
-            this.migrationScriptProvider = new CompositeScriptProvider();
+            throw FlightExceptionFactory.InvalidOperation("CannotBuildWithoutConnectionFactory");
         }
 
-        /// <summary>
-        /// Add initialization scripts. Initialization scripts are executed prior to ensuring audit table exists and are best used for development and resetting databases to a known state.
-        /// </summary>
-        /// <remarks>Initialization scripts are not executed in a transaction.</remarks>
-        /// <param name="scriptProvider">The provider for initialization scripts.</param>
-        /// <returns>The migration builder instance.</returns>
-        public MigrationBuilder AddInitializationScripts(IScriptProvider scriptProvider)
+        if (this.batchManager == null)
         {
-            this.initializationScriptProvider.AddScriptProvider(scriptProvider);
-
-            return this;
+            throw FlightExceptionFactory.InvalidOperation("CannotBuildWithoutBatchManager");
         }
 
-        /// <summary>
-        /// Add scripts to the migration plan. Batches of migration scripts are executed in order they are added to the plan.
-        /// </summary>
-        /// <param name="scriptProvider">The provider for migration scripts.</param>
-        /// <returns>The migration builder instance.</returns>
-        public MigrationBuilder AddMigrationScripts(IScriptProvider scriptProvider)
+        if (this.auditor == null)
         {
-            this.migrationScriptProvider.AddScriptProvider(scriptProvider);
-
-            return this;
+            throw FlightExceptionFactory.InvalidOperation("CannotBuildWithoutAuditor");
         }
 
-        /// <summary>
-        /// Build the migration plan.
-        /// </summary>
-        /// <param name="loggerFactory">The factory for creating <see cref="ILogger"/> instances.</param>
-        /// <exception cref="InvalidOperationException">Thrown when a required resource was not specified.</exception>
-        /// <returns>A <see cref="Migration">Migration Plan</see>.</returns>
-        public IMigration Build(ILoggerFactory loggerFactory)
+        if (this.scriptExecutor == null)
         {
-            if (this.connectionFactory == null)
-            {
-                throw FlightExceptionFactory.InvalidOperation("CannotBuildWithoutConnectionFactory");
-            }
-
-            if (this.batchManager == null)
-            {
-                throw FlightExceptionFactory.InvalidOperation("CannotBuildWithoutBatchManager");
-            }
-
-            if (this.auditor == null)
-            {
-                throw FlightExceptionFactory.InvalidOperation("CannotBuildWithoutAuditor");
-            }
-
-            if (this.scriptExecutor == null)
-            {
-                throw FlightExceptionFactory.InvalidOperation("CannotBuildWithoutScriptExecutor");
-            }
-
-            Log.SetLogger(loggerFactory.CreateLogger(typeof(Migration)));
-
-            return new Migration(
-                this.connectionFactory,
-                this.scriptExecutor,
-                this.auditor,
-                this.batchManager,
-                this.initializationScriptProvider,
-                this.migrationScriptProvider);
+            throw FlightExceptionFactory.InvalidOperation("CannotBuildWithoutScriptExecutor");
         }
 
-        /// <summary>
-        /// Set the auditor to used for tracking applied scripts. This is usually set by an extension method supplied by the database specific package.
-        /// </summary>
-        /// <param name="auditor">The auditor instance.</param>
-        public void SetAuditor(IAuditor auditor) => this.auditor = auditor ?? throw new ArgumentNullException(nameof(auditor));
+        Log.SetLogger(loggerFactory.CreateLogger(typeof(Migration)));
 
-        /// <summary>
-        /// Set the script file batch manager. This is usually set by an extension method supplied by the database specific package.
-        /// </summary>
-        /// <param name="batchManager">The script batch manager.</param>
-        public void SetBatchManager(IBatchManager batchManager) => this.batchManager = batchManager ?? throw new ArgumentNullException(nameof(batchManager));
+        return new Migration(
+            this.connectionFactory,
+            this.scriptExecutor,
+            this.auditor,
+            this.batchManager,
+            this.initializationScriptProvider,
+            this.migrationScriptProvider);
+    }
 
-        /// <summary>
-        /// Set the connection string factory. This is usually set by an extension method supplied by the database specific package.
-        /// </summary>
-        /// <param name="connectionFactory">tThe connection factory.</param>
-        public void SetConnectionFactory(IConnectionFactory connectionFactory) => this.connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
+    /// <summary>
+    /// Set the auditor to used for tracking applied scripts. This is usually set by an extension method supplied by the database specific package.
+    /// </summary>
+    /// <param name="auditor">The auditor instance.</param>
+    public void SetAuditor(IAuditor auditor) => this.auditor = auditor ?? throw new ArgumentNullException(nameof(auditor));
 
-        /// <summary>
-        /// Set the migration plan to execute the migration scripts without any transaction. If an exception occurs then no rollback will occur.
-        /// </summary>
-        /// <returns>The migration builder instance.</returns>
-        public MigrationBuilder UseNoTransaction()
-        {
-            this.scriptExecutor = new NoTransactionExecutor();
+    /// <summary>
+    /// Set the script file batch manager. This is usually set by an extension method supplied by the database specific package.
+    /// </summary>
+    /// <param name="batchManager">The script batch manager.</param>
+    public void SetBatchManager(IBatchManager batchManager) => this.batchManager = batchManager ?? throw new ArgumentNullException(nameof(batchManager));
 
-            return this;
-        }
+    /// <summary>
+    /// Set the connection string factory. This is usually set by an extension method supplied by the database specific package.
+    /// </summary>
+    /// <param name="connectionFactory">tThe connection factory.</param>
+    public void SetConnectionFactory(IConnectionFactory connectionFactory) => this.connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
 
-        /// <summary>
-        /// Set the migration plan to execute the migration scripts inside a transaction. If an exception occurs then all scripts are rolled back. This is the default executor.
-        /// </summary>
-        /// <remarks>This is the default executor.</remarks>
-        /// <returns>The migration builder instance.</returns>
-        public MigrationBuilder UseTransaction()
-        {
-            this.scriptExecutor = new TransactionExecutor();
+    /// <summary>
+    /// Set the migration plan to execute the migration scripts without any transaction. If an exception occurs then no rollback will occur.
+    /// </summary>
+    /// <returns>The migration builder instance.</returns>
+    public MigrationBuilder UseNoTransaction()
+    {
+        this.scriptExecutor = new NoTransactionExecutor();
 
-            return this;
-        }
+        return this;
+    }
 
-        /// <summary>
-        /// Set the migration plan to execute the migration scripts inside individual transactions. If an exception occurs then only the script being executed will be rolled back.
-        /// </summary>
-        /// <returns>The migration builder instance.</returns>
-        public MigrationBuilder UseTransactionPerScript()
-        {
-            this.scriptExecutor = new TransactionPerScriptExecutor();
+    /// <summary>
+    /// Set the migration plan to execute the migration scripts inside a transaction. If an exception occurs then all scripts are rolled back. This is the default executor.
+    /// </summary>
+    /// <remarks>This is the default executor.</remarks>
+    /// <returns>The migration builder instance.</returns>
+    public MigrationBuilder UseTransaction()
+    {
+        this.scriptExecutor = new TransactionExecutor();
 
-            return this;
-        }
+        return this;
+    }
+
+    /// <summary>
+    /// Set the migration plan to execute the migration scripts inside individual transactions. If an exception occurs then only the script being executed will be rolled back.
+    /// </summary>
+    /// <returns>The migration builder instance.</returns>
+    public MigrationBuilder UseTransactionPerScript()
+    {
+        this.scriptExecutor = new TransactionPerScriptExecutor();
+
+        return this;
     }
 }
