@@ -27,17 +27,13 @@ internal class PostgresConnectionFactory : IConnectionFactory
     /// <param name="host">The hostname or IP address of the PostgreSQL server to connect to.</param>
     /// <param name="database">The PostgreSQL database to connect to.</param>
     public PostgresConnectionFactory(string host, string database)
-    {
-        var builder = new NpgsqlConnectionStringBuilder()
+        : this(new NpgsqlConnectionStringBuilder()
         {
             ApplicationName = "Flight",
             Host = host,
             Database = database,
-            IntegratedSecurity = true,
-        };
-        var connectionString = builder.ToString();
-
-        this.connectionFactory = () => new NpgsqlConnection(connectionString);
+        })
+    {
     }
 
     /// <summary>
@@ -48,15 +44,23 @@ internal class PostgresConnectionFactory : IConnectionFactory
     /// <param name="username">The username to connect with.</param>
     /// <param name="password">The password to connect with.</param>
     public PostgresConnectionFactory(string host, string database, string username, string password)
-    {
-        var builder = new NpgsqlConnectionStringBuilder()
+        : this(new NpgsqlConnectionStringBuilder()
         {
             ApplicationName = "Flight",
             Host = host,
             Database = database,
             Username = username,
             Password = password,
-        };
+        })
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PostgresConnectionFactory"/> class.
+    /// </summary>
+    /// <param name="builder">The connection string builder.</param>
+    public PostgresConnectionFactory(NpgsqlConnectionStringBuilder builder)
+    {
         var connectionString = builder.ToString();
 
         this.connectionFactory = () => new NpgsqlConnection(connectionString);
