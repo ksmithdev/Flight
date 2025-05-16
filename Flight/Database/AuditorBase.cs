@@ -32,7 +32,7 @@ public abstract class AuditorBase : IAuditor
                 break;
             }
 
-            await this.StoreEntryAsync(connection, transaction, script, cancellationToken).ConfigureAwait(false);
+            await StoreEntryAsync(connection, transaction, script, cancellationToken).ConfigureAwait(false);
         }
     }
 

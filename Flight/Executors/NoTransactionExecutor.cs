@@ -30,7 +30,11 @@ internal class NoTransactionExecutor : IScriptExecutor
 
                 Log.Debug(commandText);
 
+#if NETSTANDARD2_1_OR_GREATER
+                await using var command = connection.CreateCommand();
+#else
                 using var command = connection.CreateCommand();
+#endif
                 command.CommandText = commandText;
                 command.CommandType = System.Data.CommandType.Text;
 

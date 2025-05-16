@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net8;net9</TargetFrameworks>
     <RootNamespace>Flight</RootNamespace>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
@@ -17,14 +17,10 @@
     <PackageId>KSmithDev.Flight.Postgres</PackageId>
     <PackageTags>flight sql migration database postgresql postgres</PackageTags>
     <Copyright>© 2020 Kyle Smith</Copyright>
-    <MinVerDefaultPreReleasePhase>preview</MinVerDefaultPreReleasePhase>
+    <MinVerDefaultPreReleaseIdentifiers>preview.0</MinVerDefaultPreReleaseIdentifiers>
     <MinVerAutoIncrement>minor</MinVerAutoIncrement>
     <MinVerTagPrefix>v</MinVerTagPrefix>
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
-    <NoWarn>1701;1702;2100</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -44,8 +40,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Npgsql" Version="8.0.7" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+    <PackageReference Include="Npgsql" Version="9.0.3" />
+    <PackageReference Include="Roslynator.Analyzers" Version="4.13.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

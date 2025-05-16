@@ -24,8 +24,8 @@ public class MigrationBuilder
     /// </summary>
     public MigrationBuilder()
     {
-        this.initializationScriptProvider = new CompositeScriptProvider();
-        this.migrationScriptProvider = new CompositeScriptProvider();
+        initializationScriptProvider = new CompositeScriptProvider();
+        migrationScriptProvider = new CompositeScriptProvider();
     }
 
     /// <summary>
@@ -36,7 +36,7 @@ public class MigrationBuilder
     /// <returns>The migration builder instance.</returns>
     public MigrationBuilder AddInitializationScripts(IScriptProvider scriptProvider)
     {
-        this.initializationScriptProvider.AddScriptProvider(scriptProvider);
+        initializationScriptProvider.AddScriptProvider(scriptProvider);
 
         return this;
     }
@@ -48,7 +48,7 @@ public class MigrationBuilder
     /// <returns>The migration builder instance.</returns>
     public MigrationBuilder AddMigrationScripts(IScriptProvider scriptProvider)
     {
-        this.migrationScriptProvider.AddScriptProvider(scriptProvider);
+        migrationScriptProvider.AddScriptProvider(scriptProvider);
 
         return this;
     }
@@ -61,22 +61,22 @@ public class MigrationBuilder
     /// <returns>A <see cref="Migration">Migration Plan</see>.</returns>
     public IMigration Build(ILoggerFactory loggerFactory)
     {
-        if (this.connectionFactory == null)
+        if (connectionFactory == null)
         {
             throw FlightExceptionFactory.InvalidOperation("CannotBuildWithoutConnectionFactory");
         }
 
-        if (this.batchManager == null)
+        if (batchManager == null)
         {
             throw FlightExceptionFactory.InvalidOperation("CannotBuildWithoutBatchManager");
         }
 
-        if (this.auditor == null)
+        if (auditor == null)
         {
             throw FlightExceptionFactory.InvalidOperation("CannotBuildWithoutAuditor");
         }
 
-        if (this.scriptExecutor == null)
+        if (scriptExecutor == null)
         {
             throw FlightExceptionFactory.InvalidOperation("CannotBuildWithoutScriptExecutor");
         }
@@ -84,12 +84,12 @@ public class MigrationBuilder
         Log.SetLogger(loggerFactory.CreateLogger(typeof(Migration)));
 
         return new Migration(
-            this.connectionFactory,
-            this.scriptExecutor,
-            this.auditor,
-            this.batchManager,
-            this.initializationScriptProvider,
-            this.migrationScriptProvider);
+            connectionFactory,
+            scriptExecutor,
+            auditor,
+            batchManager,
+            initializationScriptProvider,
+            migrationScriptProvider);
     }
 
     /// <summary>
@@ -116,7 +116,7 @@ public class MigrationBuilder
     /// <returns>The migration builder instance.</returns>
     public MigrationBuilder UseNoTransaction()
     {
-        this.scriptExecutor = new NoTransactionExecutor();
+        scriptExecutor = new NoTransactionExecutor();
 
         return this;
     }
@@ -128,7 +128,7 @@ public class MigrationBuilder
     /// <returns>The migration builder instance.</returns>
     public MigrationBuilder UseTransaction()
     {
-        this.scriptExecutor = new TransactionExecutor();
+        scriptExecutor = new TransactionExecutor();
 
         return this;
     }
@@ -139,7 +139,7 @@ public class MigrationBuilder
     /// <returns>The migration builder instance.</returns>
     public MigrationBuilder UseTransactionPerScript()
     {
-        this.scriptExecutor = new TransactionPerScriptExecutor();
+        scriptExecutor = new TransactionPerScriptExecutor();
 
         return this;
     }

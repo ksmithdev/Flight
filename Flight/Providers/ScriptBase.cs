@@ -16,12 +16,12 @@ public abstract class ScriptBase : IScript
     /// </summary>
     protected ScriptBase()
     {
-        this.bytes = new Lazy<byte[]>(this.GetBytes);
-        this.checksum = new Lazy<string>(this.GetChecksum);
+        bytes = new Lazy<byte[]>(GetBytes);
+        checksum = new Lazy<string>(GetChecksum);
     }
 
     /// <inheritdoc/>
-    public string Checksum => this.checksum.Value;
+    public string Checksum => checksum.Value;
 
     /// <inheritdoc/>
     public abstract bool Idempotent { get; }
@@ -32,12 +32,12 @@ public abstract class ScriptBase : IScript
     /// <inheritdoc/>
     public abstract string Text { get; }
 
-    private byte[] GetBytes() => Encoding.UTF8.GetBytes(this.Text);
+    private byte[] GetBytes() => Encoding.UTF8.GetBytes(Text);
 
     private string GetChecksum()
     {
         using var sha = System.Security.Cryptography.SHA256.Create();
-        var hash = sha.ComputeHash(this.bytes.Value);
+        var hash = sha.ComputeHash(bytes.Value);
 
         return Convert.ToBase64String(hash);
     }

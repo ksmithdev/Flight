@@ -18,7 +18,7 @@ internal class MySqlConnectionFactory : IConnectionFactory
     /// <param name="connectionString">The connection properties use to open the MySQL database.</param>
     public MySqlConnectionFactory(string connectionString)
     {
-        this.connectionFactory = () => new MySqlConnection(connectionString);
+        connectionFactory = () => new MySqlConnection(connectionString);
     }
 
     /// <summary>
@@ -36,7 +36,7 @@ internal class MySqlConnectionFactory : IConnectionFactory
         };
         var connectionString = builder.ToString();
 
-        this.connectionFactory = () => new MySqlConnection(connectionString);
+        connectionFactory = () => new MySqlConnection(connectionString);
     }
 
     /// <summary>
@@ -57,9 +57,9 @@ internal class MySqlConnectionFactory : IConnectionFactory
         };
         var connectionString = builder.ToString();
 
-        this.connectionFactory = () => new MySqlConnection(connectionString);
+        connectionFactory = () => new MySqlConnection(connectionString);
     }
 
     /// <inheritdoc/>
-    public DbConnection Create() => this.connectionFactory();
+    public DbConnection Create() => connectionFactory();
 }

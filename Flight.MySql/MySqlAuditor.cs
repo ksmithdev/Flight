@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Flight.Database;
@@ -20,15 +21,30 @@ internal class MySqlAuditor : AuditorBase
     /// <param name="tableName">The name of the audit table used to store the applied scripts.</param>
     public MySqlAuditor(string tableName)
     {
-        // TODO: check tableName for invalid characters and throw exception to prevent a possible sql injection attack
+        if (string.IsNullOrWhiteSpace(tableName))
+        {
+            throw new ArgumentNullException(nameof(tableName));
+        }
+
+        if (!ValidTableNameRegex().IsMatch(tableName))
+        {
+            throw new ArgumentException(
+                $"{tableName} name contains invalid characters. Only letters, numbers, dollar signs, and underscores allowed",
+                nameof(tableName));
+        }
+
         this.tableName = tableName;
     }
 
     /// <inheritdoc/>
     public override async Task EnsureCreatedAsync(DbConnection connection, CancellationToken cancellationToken)
     {
+#if NETSTANDARD2_1_OR_GREATER
+        await using var command = connection.CreateCommand();
+#else
         using var command = connection.CreateCommand();
-        command.CommandText = $@"CREATE TABLE IF NOT EXISTS {this.tableName} (
+#endif
+        command.CommandText = $@"CREATE TABLE IF NOT EXISTS `{tableName}` (
     ScriptName VARCHAR(255) NOT NULL,
     Checksum CHAR(44) NOT NULL,
     Idempotent BIT NOT NULL,
@@ -44,10 +60,18 @@ internal class MySqlAuditor : AuditorBase
     {
         var auditEntries = new List<AuditEntry>();
 
+#if NETSTANDARD2_1_OR_GREATER
+        await using var command = connection.CreateCommand();
+#else
         using var command = connection.CreateCommand();
-        command.CommandText = $"SELECT ScriptName, Checksum, Idempotent, Applied, AppliedBy FROM {this.tableName}";
+#endif
+        command.CommandText = $"SELECT ScriptName, Checksum, Idempotent, Applied, AppliedBy FROM `{tableName}`";
 
+#if NETSTANDARD2_1_OR_GREATER
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+#else
         using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+#endif
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             auditEntries.Add(new AuditEntry
@@ -66,13 +90,19 @@ internal class MySqlAuditor : AuditorBase
     /// <inheritdoc/>
     public override async Task StoreEntryAsync(DbConnection connection, DbTransaction? transaction, IScript script, CancellationToken cancellationToken)
     {
+#if NETSTANDARD2_1_OR_GREATER
+        await using var command = connection.CreateCommand();
+#else
         using var command = connection.CreateCommand();
+#endif
         command.Transaction = transaction;
-        command.CommandText = $"INSERT INTO {this.tableName} (ScriptName, Checksum, Idempotent, Applied, AppliedBy) VALUES (@scriptName, @checksum, @idempotent, UTC_TIMESTAMP(), USER())";
+        command.CommandText = $"INSERT INTO `{tableName}` (ScriptName, Checksum, Idempotent, Applied, AppliedBy) VALUES (@scriptName, @checksum, @idempotent, UTC_TIMESTAMP(), USER())";
         command.AddParameter("@scriptName", script.ScriptName);
         command.AddParameter("@checksum", script.Checksum);
         command.AddParameter("@idempotent", script.Idempotent);
 
         await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
+
+    private static Regex ValidTableNameRegex() => new(@"^(?!(?:[0-9]+)$)(?!\$)[a-zA-Z0-9$_]+$");
 }

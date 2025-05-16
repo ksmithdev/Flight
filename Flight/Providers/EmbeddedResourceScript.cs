@@ -21,10 +21,10 @@ internal class EmbeddedResourceScript : ScriptBase
     {
         this.resourceName = resourceName ?? throw new ArgumentNullException(nameof(resourceName));
 
-        this.text = new Lazy<string>(this.GetText);
+        text = new Lazy<string>(GetText);
 
-        this.ScriptName = Path.GetFileName(resourceName);
-        this.Idempotent = idempotent;
+        ScriptName = Path.GetFileName(resourceName);
+        Idempotent = idempotent;
     }
 
     /// <inheritdoc/>
@@ -34,12 +34,12 @@ internal class EmbeddedResourceScript : ScriptBase
     public override string ScriptName { get; }
 
     /// <inheritdoc/>
-    public override string Text => this.text.Value;
+    public override string Text => text.Value;
 
     private string GetText()
     {
         var assembly = Assembly.GetExecutingAssembly();
-        using var stream = assembly.GetManifestResourceStream(this.resourceName) ?? throw new InvalidOperationException($"Embedded resource '{this.resourceName}' not found.");
+        using var stream = assembly.GetManifestResourceStream(resourceName) ?? throw new InvalidOperationException($"Embedded resource '{resourceName}' not found.");
         using var reader = new StreamReader(stream);
         return reader.ReadToEnd();
     }

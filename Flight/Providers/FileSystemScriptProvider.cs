@@ -50,7 +50,7 @@ public class FileSystemScriptProvider : ScriptProviderBase
 
             var scripts = new List<FileSystemScript>();
 
-            var paths = this.locations.Select(Path.GetFullPath);
+            var paths = locations.Select(Path.GetFullPath);
 
             foreach (var path in paths.Distinct())
             {
@@ -60,14 +60,14 @@ public class FileSystemScriptProvider : ScriptProviderBase
                 }
 
                 Log.Debug($"Searching for scripts in {path}...");
-                foreach (var filePath in Directory.GetFiles(path, this.Filter, this.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
+                foreach (var filePath in Directory.GetFiles(path, Filter, Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
                 {
                     Log.Debug($"Found {filePath}");
-                    scripts.Add(new FileSystemScript(filePath, this.Idempotent));
+                    scripts.Add(new FileSystemScript(filePath, Idempotent));
                 }
             }
 
-            return this.Sorted ? scripts.OrderBy(s => s.ScriptName).AsEnumerable() : scripts;
+            return Sorted ? scripts.OrderBy(s => s.ScriptName).AsEnumerable() : scripts;
         }
         finally
         {

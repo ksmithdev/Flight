@@ -15,7 +15,7 @@ public class CompositeScriptProvider : ScriptProviderBase
     /// </summary>
     public CompositeScriptProvider()
     {
-        this.scriptProviders = new List<IScriptProvider>();
+        scriptProviders = new List<IScriptProvider>();
     }
 
     /// <summary>
@@ -31,7 +31,7 @@ public class CompositeScriptProvider : ScriptProviderBase
     /// Add the supplied provider to the composite collection.
     /// </summary>
     /// <param name="scriptProvider">The script provider to add.</param>
-    public void AddScriptProvider(IScriptProvider scriptProvider) => this.scriptProviders.Add(scriptProvider);
+    public void AddScriptProvider(IScriptProvider scriptProvider) => scriptProviders.Add(scriptProvider);
 
     /// <summary>
     /// <inheritdoc cref="IScriptProvider.GetScripts"/>
@@ -43,7 +43,7 @@ public class CompositeScriptProvider : ScriptProviderBase
         {
             Log.Trace($"Begin {nameof(CompositeScriptProvider)}.{nameof(this.GetScripts)}");
 
-            foreach (var scriptProvider in this.scriptProviders)
+            foreach (var scriptProvider in scriptProviders)
             {
                 foreach (var script in scriptProvider.GetScripts())
                 {
@@ -62,5 +62,5 @@ public class CompositeScriptProvider : ScriptProviderBase
     /// </summary>
     /// <param name="scriptProvider">The script provider to remove.</param>
     /// <returns>Whether the script provider was removed.</returns>
-    public bool RemoveScriptProvider(IScriptProvider scriptProvider) => this.scriptProviders.Remove(scriptProvider);
+    public bool RemoveScriptProvider(IScriptProvider scriptProvider) => scriptProviders.Remove(scriptProvider);
 }

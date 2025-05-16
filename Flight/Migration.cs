@@ -52,10 +52,14 @@ public class Migration : IMigration
 
         try
         {
-            using var connection = this.connectionFactory.Create();
+#if NETSTANDARD2_1_OR_GREATER
+            await using var connection = connectionFactory.Create();
+#else
+            using var connection = connectionFactory.Create();
+#endif
             await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-            var initializationScripts = this.initializationScriptProvider.GetScripts();
+            var initializationScripts = initializationScriptProvider.GetScripts();
 
             Log.Info($"{initializationScripts.Count()} initialization script(s) loaded.");
             foreach (var script in initializationScripts)
@@ -63,9 +67,13 @@ public class Migration : IMigration
                 Log.Info($"Executing initialization script {script.ScriptName}, Checksum: {script.Checksum}");
                 Log.Debug(script.Text);
 
-                foreach (var commandText in this.batchManager.Split(script))
+                foreach (var commandText in batchManager.Split(script))
                 {
+#if NETSTANDARD2_1_OR_GREATER
+                    await using var command = connection.CreateCommand();
+#else
                     using var command = connection.CreateCommand();
+#endif
                     command.CommandText = commandText;
                     command.CommandType = System.Data.CommandType.Text;
 
@@ -73,15 +81,15 @@ public class Migration : IMigration
                 }
             }
 
-            await this.auditLog.EnsureCreatedAsync(connection, cancellationToken).ConfigureAwait(false);
-            await this.auditLog.StoreEntriesAsync(connection, null, initializationScripts, cancellationToken).ConfigureAwait(false);
+            await auditLog.EnsureCreatedAsync(connection, cancellationToken).ConfigureAwait(false);
+            await auditLog.StoreEntriesAsync(connection, null, initializationScripts, cancellationToken).ConfigureAwait(false);
 
-            var auditLogEntries = await this.auditLog.LoadEntriesAsync(connection, cancellationToken).ConfigureAwait(false);
+            var auditLogEntries = await auditLog.LoadEntriesAsync(connection, cancellationToken).ConfigureAwait(false);
 
-            var changeSet = this.CreateChangeSet(auditLogEntries);
+            var changeSet = CreateChangeSet(auditLogEntries);
             if (changeSet.Count > 0)
             {
-                await this.scriptExecutor.ExecuteAsync(connection, changeSet, this.batchManager, this.auditLog, cancellationToken).ConfigureAwait(false);
+                await scriptExecutor.ExecuteAsync(connection, changeSet, batchManager, auditLog, cancellationToken).ConfigureAwait(false);
             }
         }
         catch (FlightException)
@@ -105,7 +113,7 @@ public class Migration : IMigration
             .ToLookup(e => e.ScriptName, StringComparer.OrdinalIgnoreCase);
 
         var changeSet = new List<IScript>();
-        var scripts = this.migrationScriptProvider.GetScripts();
+        var scripts = migrationScriptProvider.GetScripts();
 
         Log.Info($"{scripts.Count()} migration script(s) loaded.");
         Log.Info("Generating change set...");

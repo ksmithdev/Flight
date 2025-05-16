@@ -18,7 +18,7 @@ internal class SqliteConnectionFactory : IConnectionFactory
     /// <param name="connectionString">The string used to open the connection.</param>
     public SqliteConnectionFactory(string connectionString)
     {
-        this.connectionFactory = () => new SqliteConnection(connectionString);
+        connectionFactory = () => new SqliteConnection(connectionString);
     }
 
     /// <summary>
@@ -35,9 +35,9 @@ internal class SqliteConnectionFactory : IConnectionFactory
         };
         var connectionString = builder.ToString();
 
-        this.connectionFactory = () => new SqliteConnection(connectionString);
+        connectionFactory = () => new SqliteConnection(connectionString);
     }
 
     /// <inheritdoc/>
-    public DbConnection Create() => this.connectionFactory();
+    public DbConnection Create() => connectionFactory();
 }

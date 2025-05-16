@@ -44,19 +44,19 @@ public class EmbeddedResourceScriptProvider : ScriptProviderBase
 
             var scripts = new List<EmbeddedResourceScript>();
 
-            foreach (var resourceName in this.resourceNames)
+            foreach (var resourceName in resourceNames)
             {
                 // Check if the resource name matches the filter pattern
-                if (!PathMatcher.IsMatch(resourceName, this.Filter))
+                if (!PathMatcher.IsMatch(resourceName, Filter))
                 {
                     continue;
                 }
 
                 Log.Debug($"Loading script from embedded resource: {resourceName}");
-                scripts.Add(new EmbeddedResourceScript(resourceName, this.Idempotent));
+                scripts.Add(new EmbeddedResourceScript(resourceName, Idempotent));
             }
 
-            return this.Sorted ? scripts.OrderBy(s => s.ScriptName) : scripts;
+            return Sorted ? scripts.OrderBy(s => s.ScriptName) : scripts;
         }
         finally
         {

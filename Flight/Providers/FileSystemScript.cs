@@ -20,10 +20,10 @@ internal class FileSystemScript : ScriptBase
     {
         this.path = path ?? throw new ArgumentNullException(nameof(path));
 
-        this.text = new Lazy<string>(this.GetText);
+        text = new Lazy<string>(GetText);
 
-        this.ScriptName = Path.GetFileName(path);
-        this.Idempotent = idempotent;
+        ScriptName = Path.GetFileName(path);
+        Idempotent = idempotent;
     }
 
     /// <inheritdoc/>
@@ -33,7 +33,7 @@ internal class FileSystemScript : ScriptBase
     public override string ScriptName { get; }
 
     /// <inheritdoc/>
-    public override string Text => this.text.Value;
+    public override string Text => text.Value;
 
-    private string GetText() => File.ReadAllText(this.path);
+    private string GetText() => File.ReadAllText(path);
 }

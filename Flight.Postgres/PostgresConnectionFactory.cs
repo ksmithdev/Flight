@@ -18,7 +18,7 @@ internal class PostgresConnectionFactory : IConnectionFactory
     /// <param name="connectionString">The connection used to open the PostgreSQL database.</param>
     public PostgresConnectionFactory(string connectionString)
     {
-        this.connectionFactory = () => new NpgsqlConnection(connectionString);
+        connectionFactory = () => new NpgsqlConnection(connectionString);
     }
 
     /// <summary>
@@ -63,9 +63,9 @@ internal class PostgresConnectionFactory : IConnectionFactory
     {
         var connectionString = builder.ToString();
 
-        this.connectionFactory = () => new NpgsqlConnection(connectionString);
+        connectionFactory = () => new NpgsqlConnection(connectionString);
     }
 
     /// <inheritdoc/>
-    public DbConnection Create() => this.connectionFactory();
+    public DbConnection Create() => connectionFactory();
 }

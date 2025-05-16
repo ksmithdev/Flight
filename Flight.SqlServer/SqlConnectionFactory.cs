@@ -2,8 +2,8 @@
 
 using System;
 using System.Data.Common;
-using System.Data.SqlClient;
 using Flight.Database;
+using Microsoft.Data.SqlClient;
 
 /// <summary>
 /// Represents a factory used for creating connections to SQL Server.
@@ -38,7 +38,7 @@ internal class SqlConnectionFactory : IConnectionFactory
         };
         var connectionString = builder.ToString();
 
-        this.connectionFactory = () => new SqlConnection(connectionString);
+        connectionFactory = () => new SqlConnection(connectionString);
     }
 
     /// <summary>
@@ -81,7 +81,7 @@ internal class SqlConnectionFactory : IConnectionFactory
         };
         var connectionString = builder.ToString();
 
-        this.connectionFactory = () => new SqlConnection(connectionString);
+        connectionFactory = () => new SqlConnection(connectionString);
     }
 
     /// <summary>
@@ -95,9 +95,9 @@ internal class SqlConnectionFactory : IConnectionFactory
             throw new ArgumentNullException(nameof(connectionString));
         }
 
-        this.connectionFactory = () => new SqlConnection(connectionString);
+        connectionFactory = () => new SqlConnection(connectionString);
     }
 
     /// <inheritdoc/>
-    public DbConnection Create() => this.connectionFactory();
+    public DbConnection Create() => connectionFactory();
 }

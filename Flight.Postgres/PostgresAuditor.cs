@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Flight.Database;
@@ -11,7 +12,7 @@ using Flight.Database;
 /// <summary>
 /// Represents the auditor for PostgreSQL servers.
 /// </summary>
-internal class PostgresAuditor : AuditorBase
+internal partial class PostgresAuditor : AuditorBase
 {
     private readonly string schemaName;
     private readonly string tableName;
@@ -23,7 +24,23 @@ internal class PostgresAuditor : AuditorBase
     /// <param name="tableName">The name of the audit table used for tracking applied migrations.</param>
     public PostgresAuditor(string schemaName, string tableName)
     {
-        // TODO: check schemaName and tableName for invalid characters and throw exception to prevent a possible sql injection attack
+        ArgumentException.ThrowIfNullOrWhiteSpace(schemaName, nameof(schemaName));
+        ArgumentException.ThrowIfNullOrWhiteSpace(tableName, nameof(tableName));
+
+        if (!ValidSchemaAndTableNameRegex().IsMatch(schemaName))
+        {
+            throw new ArgumentException(
+                $"{schemaName} name contains invalid characters. Only letters, numbers, and underscores allowed",
+                nameof(schemaName));
+        }
+
+        if (!ValidSchemaAndTableNameRegex().IsMatch(tableName))
+        {
+            throw new ArgumentException(
+                $"{tableName} name contains invalid characters. Only letters, numbers, and underscores allowed",
+                nameof(tableName));
+        }
+
         this.schemaName = schemaName;
         this.tableName = tableName;
     }
@@ -31,10 +48,10 @@ internal class PostgresAuditor : AuditorBase
     /// <inheritdoc/>
     public override async Task EnsureCreatedAsync(DbConnection connection, CancellationToken cancellationToken)
     {
-        using (var command = connection.CreateCommand())
+        await using (var command = connection.CreateCommand())
         {
             command.CommandText = "SELECT COUNT(1) FROM information_schema.schemata WHERE schema_name = @schema;";
-            command.AddParameter("@schema", this.schemaName);
+            command.AddParameter("@schema", schemaName);
 
             var result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
             var count = Convert.ToInt32(result, CultureInfo.InvariantCulture);
@@ -42,17 +59,17 @@ internal class PostgresAuditor : AuditorBase
             if (count == 0)
             {
                 command.Parameters.Clear();
-                command.CommandText = $"CREATE SCHEMA {this.schemaName};";
+                command.CommandText = $"CREATE SCHEMA {schemaName};";
                 await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             }
         }
 
-        using (var command = connection.CreateCommand())
+        await using (var command = connection.CreateCommand())
         {
             command.CommandText = "SELECT COUNT(1) FROM pg_catalog.pg_tables WHERE schemaname=@schema AND tablename=@table;";
 
-            command.AddParameter("@schema", this.schemaName);
-            command.AddParameter("@table", this.tableName);
+            command.AddParameter("@schema", schemaName);
+            command.AddParameter("@table", tableName);
 
             var result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
             var count = Convert.ToInt32(result, CultureInfo.InvariantCulture);
@@ -60,7 +77,7 @@ internal class PostgresAuditor : AuditorBase
             if (count == 0)
             {
                 command.Parameters.Clear();
-                command.CommandText = $@"CREATE TABLE {this.schemaName}.{this.tableName} (
+                command.CommandText = $@"CREATE TABLE {schemaName}.{tableName} (
     script_name varchar(255) NOT NULL,
     checksum char(44) NOT NULL,
     idempotent bool NOT NULL,
@@ -78,10 +95,10 @@ internal class PostgresAuditor : AuditorBase
     {
         var auditEntries = new List<AuditEntry>();
 
-        using var command = connection.CreateCommand();
-        command.CommandText = $"SELECT script_name, checksum, idempotent, applied, applied_by FROM {this.schemaName}.{this.tableName}";
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"SELECT script_name, checksum, idempotent, applied, applied_by FROM {schemaName}.{tableName}";
 
-        using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             auditEntries.Add(new AuditEntry
@@ -100,13 +117,16 @@ internal class PostgresAuditor : AuditorBase
     /// <inheritdoc/>
     public override async Task StoreEntryAsync(DbConnection connection, DbTransaction? transaction, IScript script, CancellationToken cancellationToken)
     {
-        using var command = connection.CreateCommand();
+        await using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = $"INSERT INTO {this.schemaName}.{this.tableName} (script_name, checksum, idempotent, applied, applied_by) VALUES (@scriptName, @checksum, @idempotent, now(), current_user)";
+        command.CommandText = $"INSERT INTO {schemaName}.{tableName} (script_name, checksum, idempotent, applied, applied_by) VALUES (@scriptName, @checksum, @idempotent, now(), current_user)";
         command.AddParameter("@scriptName", script.ScriptName);
         command.AddParameter("@checksum", script.Checksum);
         command.AddParameter("@idempotent", script.Idempotent);
 
         await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
+
+    [GeneratedRegex("^[a-zA-Z][a-zA-Z0-9_]*$")]
+    private static partial Regex ValidSchemaAndTableNameRegex();
 }

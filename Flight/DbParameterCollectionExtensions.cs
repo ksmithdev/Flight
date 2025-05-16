@@ -18,10 +18,14 @@ internal static class DbParameterCollectionExtensions
     /// <exception cref="ArgumentNullException">Thrown when a parameter is null.</exception>
     public static DbParameter AddParameter(this DbCommand command, string name, object value)
     {
+#if NET8_0_OR_GREATER
+        ArgumentNullException.ThrowIfNull(command, nameof(command));
+#else
         if (command == null)
         {
             throw new ArgumentNullException(nameof(command));
         }
+#endif
 
         var parameter = command.CreateParameter();
         parameter.ParameterName = name;

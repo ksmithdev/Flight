@@ -17,14 +17,10 @@
     <PackageId>KSmithDev.Flight.MySql</PackageId>
     <PackageTags>flight sql migration database mysql</PackageTags>
     <Copyright>© 2020 Kyle Smith</Copyright>
-    <MinVerDefaultPreReleasePhase>preview</MinVerDefaultPreReleasePhase>
+    <MinVerDefaultPreReleaseIdentifiers>preview.0</MinVerDefaultPreReleaseIdentifiers>
     <MinVerAutoIncrement>minor</MinVerAutoIncrement>
     <MinVerTagPrefix>v</MinVerTagPrefix>
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
-    <NoWarn>1701;1702;2100</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -49,7 +45,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="MySql.Data" Version="9.3.0" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+    <PackageReference Include="Roslynator.Analyzers" Version="4.13.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

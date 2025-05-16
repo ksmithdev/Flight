@@ -18,7 +18,11 @@ internal class TransactionExecutor : IScriptExecutor
     {
         Log.Trace($"Begin {nameof(TransactionExecutor)}.{nameof(this.ExecuteAsync)}");
 
+#if NETSTANDARD2_1_OR_GREATER
+        await using var transaction = connection.BeginTransaction();
+#else
         using var transaction = connection.BeginTransaction();
+#endif
         try
         {
             foreach (var script in scripts)
@@ -34,7 +38,11 @@ internal class TransactionExecutor : IScriptExecutor
 
                     Log.Debug(commandText);
 
+#if NETSTANDARD2_1_OR_GREATER
+                    await using var command = connection.CreateCommand();
+#else
                     using var command = connection.CreateCommand();
+#endif
                     command.Transaction = transaction;
                     command.CommandText = commandText;
                     command.CommandType = System.Data.CommandType.Text;

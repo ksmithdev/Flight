@@ -22,7 +22,11 @@ internal class TransactionPerScriptExecutor : IScriptExecutor
         {
             Log.Info($"Executing migration script {script.ScriptName}, Checksum: {script.Checksum}");
 
+#if NETSTANDARD2_1_OR_GREATER
+            await using var transaction = connection.BeginTransaction();
+#else
             using var transaction = connection.BeginTransaction();
+#endif
             try
             {
                 foreach (var commandText in batchManager.Split(script))
@@ -34,7 +38,11 @@ internal class TransactionPerScriptExecutor : IScriptExecutor
 
                     Log.Debug(commandText);
 
+#if NETSTANDARD2_1_OR_GREATER
+                    await using var command = connection.CreateCommand();
+#else
                     using var command = connection.CreateCommand();
+#endif
                     command.Transaction = transaction;
                     command.CommandText = commandText;
                     command.CommandType = System.Data.CommandType.Text;
