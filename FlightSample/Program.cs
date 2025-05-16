@@ -33,12 +33,12 @@ internal static class Program
             .UseSqlite("Data Source=:memory:;", auditTable: "changesets")
             .UseTransaction()
 #if DEBUG
-            .AddInitializationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Initialization" }))
-            .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" }) { Recursive = true, Sorted = true })
+            .AddInitializationScripts(new FileSystemScriptProvider([@"Sqlite\Initialization"]))
+            .AddMigrationScripts(new FileSystemScriptProvider([@"Sqlite\Migrations"]) { Recursive = true, Sorted = true })
 #else
             .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" }) { Sorted = true })
 #endif
-            .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Views" }) { Idempotent = true })
+            .AddMigrationScripts(new FileSystemScriptProvider([@"Sqlite\Views"]) { Idempotent = true })
             .Build(loggerFactory);
 
         // execute the migration
