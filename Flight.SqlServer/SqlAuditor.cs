@@ -24,9 +24,20 @@ internal partial class SqlAuditor : AuditorBase
     /// <param name="tableName">The table name for the audit table.</param>
     public SqlAuditor(string schemaName, string tableName)
     {
-
+#if NETSTANDARD2_1_OR_GREATER || NET8_0_OR_GREATER
         ArgumentException.ThrowIfNullOrWhiteSpace(schemaName, nameof(schemaName));
         ArgumentException.ThrowIfNullOrWhiteSpace(tableName, nameof(tableName));
+#else
+        if (string.IsNullOrWhiteSpace(schemaName))
+        {
+            throw new ArgumentNullException(nameof(schemaName));
+        }
+
+        if (string.IsNullOrWhiteSpace(tableName))
+        {
+            throw new ArgumentNullException(nameof(tableName));
+        }
+#endif
 
         if (!ValidSchemaAndTableNameRegex().IsMatch(schemaName))
         {
@@ -52,7 +63,7 @@ internal partial class SqlAuditor : AuditorBase
 #if NETSTANDARD2_1_OR_GREATER || NET8_0_OR_GREATER
         await using (var command = connection.CreateCommand())
 #else
-using (var command = connection.CreateCommand())
+        using (var command = connection.CreateCommand())
 #endif
         {
             command.CommandText = "SELECT COUNT(1) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME=@schema;";
@@ -72,7 +83,7 @@ using (var command = connection.CreateCommand())
 #if NETSTANDARD2_1_OR_GREATER || NET8_0_OR_GREATER
         await using (var command = connection.CreateCommand())
 #else
-using (var command = connection.CreateCommand())
+        using (var command = connection.CreateCommand())
 #endif
         {
             command.CommandText = "SELECT COUNT(1) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=@schema AND TABLE_NAME=@table;";
@@ -106,14 +117,14 @@ AppliedBy nvarchar(104) NOT NULL
 #if NETSTANDARD2_1_OR_GREATER || NET8_0_OR_GREATER
         await using var command = connection.CreateCommand();
 #else
-using var command = connection.CreateCommand();
+        using var command = connection.CreateCommand();
 #endif
         command.CommandText = $"SELECT ScriptName, Checksum, Idempotent, Applied, AppliedBy FROM [{schemaName}].[{tableName}]";
 
 #if NETSTANDARD2_1_OR_GREATER || NET8_0_OR_GREATER
         await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 #else
-using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 #endif
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -136,7 +147,7 @@ using var reader = await command.ExecuteReaderAsync(cancellationToken).Configure
 #if NETSTANDARD2_1_OR_GREATER || NET8_0_OR_GREATER
         await using var command = connection.CreateCommand();
 #else
-using var command = connection.CreateCommand();
+        using var command = connection.CreateCommand();
 #endif
         command.Transaction = transaction;
         command.CommandText = $"INSERT INTO [{schemaName}].[{tableName}] (ScriptName, Checksum, Idempotent, Applied, AppliedBy) VALUES (@scriptName, @checksum, @idempotent, GETUTCDATE(), CURRENT_USER)";
@@ -147,6 +158,10 @@ using var command = connection.CreateCommand();
         await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
+#if NETSTANDARD2_1_OR_GREATER || NET8_0_OR_GREATER
     [GeneratedRegex("^[a-zA-Z_@#][a-zA-Z0-9_@$#_]*$")]
     private static partial Regex ValidSchemaAndTableNameRegex();
+#else
+    private static Regex ValidSchemaAndTableNameRegex() => new(@"^[a-zA-Z_@#][a-zA-Z0-9_@$#_]*$");
+#endif
 }
