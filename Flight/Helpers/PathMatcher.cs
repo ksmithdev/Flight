@@ -59,14 +59,14 @@ public static class PathMatcher
 
     private static bool MatchPattern(string? input, string pattern)
     {
+        if (input == null)
+        {
+            return false;
+        }
+
         if (string.IsNullOrEmpty(pattern))
         {
             return true;
-        }
-
-        if (string.IsNullOrEmpty(input))
-        {
-            return false;
         }
 
         // Handle simple cases
