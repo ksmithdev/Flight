@@ -28,6 +28,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<EmbeddedResource Include="Embedded\**\*.sql" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Content Include="appsettings.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<TransformOnBuild>true</TransformOnBuild>

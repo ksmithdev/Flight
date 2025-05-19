@@ -39,9 +39,8 @@ public static class PathMatcher
         string? patternExtension = patternParts.Length > 1 ? patternParts[1] : null;
 
         // Get actual file name and extension
-        var fileInfo = new FileInfo(path);
-        string fileName = fileInfo.Name;
-        string fileExtension = fileInfo.Extension;
+        string? fileExtension = Path.GetExtension(path)?.Trim('.');
+        string fileName = Path.GetFileNameWithoutExtension(path);
 
         // Match file name
         if (!MatchPattern(fileName, patternFileName))
@@ -58,7 +57,7 @@ public static class PathMatcher
         return true;
     }
 
-    private static bool MatchPattern(string input, string pattern)
+    private static bool MatchPattern(string? input, string pattern)
     {
         if (string.IsNullOrEmpty(pattern))
         {

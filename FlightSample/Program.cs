@@ -35,6 +35,7 @@ internal static class Program
 #if DEBUG
             .AddInitializationScripts(new FileSystemScriptProvider([@"Sqlite\Initialization"]))
             .AddMigrationScripts(new FileSystemScriptProvider([@"Sqlite\Migrations"]) { Recursive = true, Sorted = true })
+            .AddMigrationScripts(new EmbeddedResourceScriptProvider([@"FlightSample.Embedded.Sqlite"]) { Filter = "*.sql", Sorted = true })
 #else
             .AddMigrationScripts(new FileSystemScriptProvider(new[] { @"Sqlite\Migrations" }) { Sorted = true })
 #endif

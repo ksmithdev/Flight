@@ -2,6 +2,7 @@ namespace Flight.Providers;
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Flight.Logging;
 
 /// <summary>
@@ -44,16 +45,19 @@ public class EmbeddedResourceScriptProvider : ScriptProviderBase
 
             var scripts = new List<EmbeddedResourceScript>();
 
-            foreach (var resourceName in resourceNames)
+            Assembly assembly = Assembly.GetEntryAssembly();
+            foreach (string resourceName in assembly.GetManifestResourceNames())
             {
-                // Check if the resource name matches the filter pattern
-                if (!PathMatcher.IsMatch(resourceName, Filter))
+                if (resourceNames.Any(n => resourceName.StartsWith(n, System.StringComparison.OrdinalIgnoreCase)))
                 {
-                    continue;
-                }
+                    if (!PathMatcher.IsMatch(resourceName, Filter))
+                    {
+                        continue;
+                    }
 
-                Log.Debug($"Loading script from embedded resource: {resourceName}");
-                scripts.Add(new EmbeddedResourceScript(resourceName, Idempotent));
+                    Log.Debug($"Loading script from embedded resource: {resourceName}");
+                    scripts.Add(new EmbeddedResourceScript(resourceName, Idempotent));
+                }
             }
 
             return Sorted ? scripts.OrderBy(s => s.ScriptName) : scripts;
