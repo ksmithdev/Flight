@@ -15,6 +15,7 @@
     <PackageId>KSmithDev.Flight</PackageId>
     <PackageTags>flight sql migration database</PackageTags>
     <Copyright>© 2020 Kyle Smith</Copyright>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <MinVerVerbosity>detailed</MinVerVerbosity>
     <MinVerDefaultPreReleaseIdentifiers>preview.0</MinVerDefaultPreReleaseIdentifiers>
     <MinVerAutoIncrement>minor</MinVerAutoIncrement>
@@ -58,4 +59,7 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 </Project>

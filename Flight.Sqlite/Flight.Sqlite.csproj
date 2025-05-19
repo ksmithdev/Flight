@@ -16,6 +16,7 @@
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageId>KSmithDev.Flight.Sqlite</PackageId>
     <PackageTags>flight sql migration database sqlite</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <Copyright>© 2020 Kyle Smith</Copyright>
     <MinVerDefaultPreReleaseIdentifiers>preview.0</MinVerDefaultPreReleaseIdentifiers>
     <MinVerAutoIncrement>minor</MinVerAutoIncrement>
@@ -30,6 +31,10 @@
   <ItemGroup>
     <Compile Include="..\Flight\DbParameterCollectionExtensions.cs" Link="DbParameterCollectionExtensions.cs" />
     <Compile Include="..\Flight\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
   <ItemGroup>
